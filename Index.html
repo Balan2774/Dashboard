@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Family Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --accent: #0284c7;
+            --kids-bg: #e0f2fe;
+            --kids-border: #0ea5e9;
+            --changeover: #f59e0b;
+            --border: #e2e8f0;
+            --bin-blue: #2563eb;
+            --bin-green: #16a34a;
+            --bin-grey: #475569;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            background: var(--card-bg);
+            width: 95vw;
+            max-width: 1400px;
+            height: 85vh;
+            padding: 40px;
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Sidebar Expansion */
+        .sidebar {
+            border-right: 2px solid var(--border);
+            padding-right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            height: 100%;
+        }
+
+        #clock { font-size: 4.5rem; font-weight: 900; color: var(--accent); line-height: 1; letter-spacing: -2px; }
+        #date-str { font-size: 1.4rem; color: #64748b; margin-bottom: 5px; }
+
+        .status-badge {
+            padding: 15px;
+            border-radius: 16px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 1.1rem;
+            background: #f1f5f9;
+        }
+        .status-active { background: var(--kids-bg); color: var(--kids-border); }
+
+        .info-card {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+        .info-label { font-weight: 800; color: #94a3b8; font-size: 0.8rem; letter-spacing: 1.5px; display: block; margin-bottom: 10px; text-transform: uppercase; }
+
+        /* Expanded Notes Area */
+        .notes-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        #notes-area {
+            flex-grow: 1;
+            width: 100%;
+            border: 2px solid #fef3c7;
+            border-radius: 16px;
+            padding: 15px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            resize: none;
+            box-sizing: border-box;
+            background: #fffdf2;
+            line-height: 1.5;
+            color: #451a03;
+        }
+
+        /* Large Calendar Expansion */
+        .calendar-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .controls h2 { font-size: 2.5rem; font-weight: 800; color: var(--text-main); }
+        
+        button { 
+            background: #fff; border: 2px solid var(--border); border-radius: 12px; 
+            padding: 10px 20px; cursor: pointer; font-size: 1.2rem; transition: 0.2s;
+        }
+        button:hover { border-color: var(--accent); color: var(--accent); }
+
+        .days-grid { 
+            display: grid; 
+            grid-template-columns: repeat(7, 1fr); 
+            gap: 12px; 
+            flex-grow: 1;
+        }
+
+        .day-name { font-weight: 800; font-size: 1rem; color: #94a3b8; text-transform: uppercase; text-align: center; padding-bottom: 15px; }
+        
+        .day {
+            background: #fff;
+            border: 2px solid #f1f5f9;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            position: relative;
+            transition: transform 0.1s;
+        }
+
+        .kids-weekend { background-color: var(--kids-bg); border-color: var(--kids-border); color: var(--kids-border); }
+        .changeover-day { border: 3px dashed var(--changeover) !important; }
+        .today { background-color: var(--accent) !important; color: white !important; border-color: var(--accent); transform: scale(1.05); z-index: 10; }
+
+        .bin-marker { 
+            position: absolute; bottom: 12px; width: 12px; height: 12px; border-radius: 50%; 
+        }
+        .empty { visibility: hidden; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="sidebar">
+        <div>
+            <div id="clock">00:00</div>
+            <div id="date-str">Loading...</div>
+            <div id="kids-countdown" class="status-badge">Calculating...</div>
+        </div>
+
+        <div class="info-card">
+            <span class="info-label">Monday Bin</span>
+            <div id="bin-display" style="font-weight:bold; font-size: 1.2rem;">Loading...</div>
+        </div>
+
+        <div class="notes-container">
+            <span class="info-label">Notes & Reminders</span>
+            <textarea id="notes-area" placeholder="Type school events, gym times, or shopping lists here..."></textarea>
+        </div>
+
+        <div class="info-card" style="text-align:center">
+            <span class="info-label">Renfrew Weather</span>
+            <span id="temp" style="font-size: 2.2rem; font-weight:900;">--°C</span>
+        </div>
+    </div>
+
+    <div class="calendar-container">
+        <div class="controls">
+            <button onclick="changeMonth(-1)">Previous</button>
+            <h2 id="month-name">Month</h2>
+            <button onclick="changeMonth(1)">Next Month</button>
+        </div>
+        <div class="days-grid" id="calendar-days">
+            <div class="day-name">Mon</div><div class="day-name">Tue</div><div class="day-name">Wed</div>
+            <div class="day-name">Thu</div><div class="day-name">Fri</div><div class="day-name">Sat</div>
+            <div class="day-name">Sun</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let viewDate = new Date();
+    const kidsAnchor = new Date(2026, 3, 24); 
+    const binAnchor = new Date(2026, 3, 20); 
+    const binTypes = [
+        { name: "Blue Recycling", color: "var(--bin-blue)" },
+        { name: "Green + Brown", color: "var(--bin-green)" },
+        { name: "General Waste", color: "var(--bin-grey)" }
+    ];
+
+    function getScheduleInfo(date) {
+        const day = date.getDay(); 
+        const isFriSatSun = (day === 5 || day === 6 || day === 0);
+        if (!isFriSatSun) return { isKidsDay: false, isChangeover: false };
+        let calcDate = new Date(date);
+        if (day === 0) calcDate.setDate(calcDate.getDate() - 1);
+        const diffWeeks = Math.round((calcDate - kidsAnchor) / (1000 * 60 * 60 * 24 * 7));
+        const activeWeek = diffWeeks % 2 === 0;
+        return { isKidsDay: activeWeek, isChangeover: activeWeek && day === 5 };
+    }
+
+    function updateKidsCountdown() {
+        const now = new Date();
+        now.setHours(0,0,0,0);
+        const status = getScheduleInfo(now);
+        const el = document.getElementById('kids-countdown');
+        if (status.isKidsDay) {
+            el.textContent = "KIDS ARE HERE! 🏠";
+            el.classList.add('status-active');
+        } else {
+            let check = new Date(now);
+            for(let i=1; i<20; i++) {
+                check.setDate(check.getDate() + 1);
+                if(check.getDay() === 5 && getScheduleInfo(check).isKidsDay) {
+                    el.textContent = `${i} days until arrival`;
+                    el.classList.remove('status-active');
+                    break;
+                }
+            }
+        }
+    }
+
+    function buildCalendar() {
+        const year = viewDate.getFullYear();
+        const month = viewDate.getMonth();
+        document.getElementById('month-name').textContent = `${viewDate.toLocaleString('default', { month: 'long' })} ${year}`;
+        
+        const container = document.getElementById('calendar-days');
+        const headers = Array.from(container.querySelectorAll('.day-name'));
+        container.innerHTML = '';
+        headers.forEach(h => container.appendChild(h));
+
+        let firstDay = new Date(year, month, 1).getDay() - 1;
+        if (firstDay === -1) firstDay = 6;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < firstDay; i++) container.appendChild(Object.assign(document.createElement('div'), {className:'day empty'}));
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateObj = new Date(year, month, d);
+            const div = document.createElement('div');
+            div.className = 'day';
+            div.innerHTML = `<span>${d}</span>`;
+
+            const sched = getScheduleInfo(dateObj);
+            if (sched.isKidsDay) div.classList.add('kids-weekend');
+            if (sched.isChangeover) div.classList.add('changeover-day');
+            if (d === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()) div.classList.add('today');
+
+            if (dateObj.getDay() === 1) {
+                const diffWeeks = Math.floor(Math.round((dateObj - binAnchor)/(1000*60*60*24))/7);
+                if (diffWeeks >= 0) {
+                    const bin = binTypes[diffWeeks % 3];
+                    const marker = document.createElement('div');
+                    marker.className = 'bin-marker';
+                    marker.style.backgroundColor = bin.color;
+                    div.appendChild(marker);
+                }
+            }
+            container.appendChild(div);
+        }
+    }
+
+    const notesArea = document.getElementById('notes-area');
+    notesArea.value = localStorage.getItem('dashNotes') || "";
+    notesArea.addEventListener('input', () => localStorage.setItem('dashNotes', notesArea.value));
+
+    function changeMonth(dir) { viewDate.setMonth(viewDate.getMonth() + dir); buildCalendar(); }
+
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        document.getElementById('date-str').textContent = now.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+    }
+
+    async function fetchWeather() {
+        try {
+            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=55.8785&longitude=-4.3946&current_weather=true`);
+            const data = await res.json();
+            document.getElementById('temp').textContent = `${Math.round(data.current_weather.temperature)}°C`;
+        } catch (e) { }
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+    buildCalendar();
+    updateKidsCountdown();
+    fetchWeather();
+    
+    let nextMon = new Date();
+    nextMon.setDate(nextMon.getDate() + (1 + 7 - nextMon.getDay()) % 7);
+    const binDiff = Math.floor(Math.round((nextMon - binAnchor)/(1000*60*60*24))/7);
+    const curBin = binTypes[binDiff % 3];
+    document.getElementById('bin-display').innerHTML = `<span style="color:${curBin.color}">●</span> ${curBin.name}`;
+</script>
+
+</body>
+</html>
