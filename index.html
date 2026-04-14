@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Family Dashboard - V3</title>
+    <title>Queenzieburn Command Center v5</title>
     <style>
         :root {
-            --bg-overlay: rgba(15, 23, 42, 0.85); /* Dark tint over background */
-            --card-bg: rgba(30, 41, 59, 0.9); /* Semi-transparent Slate Blue */
+            --bg-overlay: rgba(15, 23, 42, 0.88);
+            --card-bg: rgba(30, 41, 59, 0.9);
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
             --accent: #38bdf8;
@@ -18,109 +18,53 @@
             --bin-blue: #3b82f6;
             --bin-green: #22c55e;
             --bin-grey: #64748b;
-            --note-bg: rgba(17, 24, 39, 0.8);
         }
 
         body {
             font-family: 'Inter', 'Segoe UI', sans-serif;
-            background: #0f172a url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80&dark=true') no-repeat center center fixed;
+            background: #0f172a url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
             background-size: cover;
             color: var(--text-main);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 0;
-            overflow: hidden;
+            margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh;
         }
 
-        /* Darkening Overlay */
-        .page-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-overlay);
-            z-index: 1;
-        }
+        .page-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-overlay); z-index: 1; }
 
-        /* Password Overlay */
         #password-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 1);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0f172a; display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 9999; backdrop-filter: blur(25px); transition: opacity 0.5s ease;
         }
 
-        .login-box {
-            background: #1e293b;
-            padding: 40px; border-radius: 24px; border: 1px solid #334155;
-            text-align: center;
-        }
-
-        #pass-input {
-            padding: 12px; font-size: 1.2rem; background: #0f172a;
-            border: 2px solid #334155; border-radius: 12px;
-            margin-bottom: 15px; width: 200px; text-align: center; color: white;
-        }
-
-        /* Main Container */
         .dashboard {
-            position: relative;
-            z-index: 2;
-            display: grid; grid-template-columns: 350px 1fr; gap: 30px;
-            width: 95vw; max-width: 1400px;
-            height: 80vh; padding: 40px; border-radius: 32px;
+            position: relative; z-index: 2; display: grid; grid-template-columns: 350px 1fr; gap: 30px;
+            width: 95vw; max-width: 1400px; height: 85vh; padding: 40px; border-radius: 32px;
             filter: blur(25px); transition: filter 0.5s ease;
         }
-
         .unlocked .dashboard { filter: blur(0); }
 
-        /* Sidebar & Calendar - Similar to previous but with glassmorphism */
         .sidebar { border-right: 2px solid var(--border); padding-right: 30px; display: flex; flex-direction: column; gap: 20px; height: 100%; }
         #clock { font-size: 4.5rem; font-weight: 900; color: var(--accent); line-height: 1; letter-spacing: -2px; }
-        #date-str { font-size: 1.4rem; color: var(--text-muted); }
+        
+        .info-card { background: rgba(15, 23, 42, 0.6); padding: 20px; border-radius: 20px; border: 1px solid var(--border); }
+        .info-label { font-weight: 800; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 1px; }
 
-        .info-card { background: var(--note-bg); padding: 15px; border-radius: 20px; border: 1px solid var(--border); }
-        .info-label { font-weight: 800; color: var(--text-muted); font-size: 0.7rem; letter-spacing: 1.5px; display: block; margin-bottom: 5px; text-transform: uppercase; }
-
-        #notes-area {
-            flex-grow: 1; width: 100%; border: 1px solid var(--border); border-radius: 16px;
-            padding: 15px; font-family: inherit; font-size: 1.1rem; resize: none;
-            box-sizing: border-box; background: rgba(0,0,0,0.2); color: #cbd5e1;
-        }
-
-        /* Calendar */
-        .calendar-container { display: flex; flex-direction: column; height: 100%; }
-        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .controls h2 { font-size: 2.2rem; margin: 0; }
-        .nav-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 8px 15px; color: white; cursor: pointer; }
+        /* Bus Display Styling */
+        .bus-list { display: flex; flex-direction: column; gap: 10px; }
+        .bus-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .bus-number { color: var(--accent); font-weight: 900; font-size: 1.2rem; }
+        .bus-time { font-weight: bold; }
+        .bus-countdown { color: var(--changeover); font-size: 0.9rem; }
 
         .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; flex-grow: 1; }
-        .day {
-            background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border); border-radius: 15px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 1.4rem; font-weight: 600; position: relative;
-        }
+        .day { background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 600; position: relative; }
         .kids-weekend { background-color: var(--kids-bg); border-color: var(--kids-border); }
-        .changeover-day { border: 2px dashed var(--changeover) !important; }
-        .today { background-color: var(--accent) !important; color: #0f172a !important; }
+        .changeover-day { border: 3px dashed var(--changeover) !important; }
+        .today { background-color: var(--accent) !important; color: #0f172a !important; transform: scale(1.05); }
 
-        /* News Ticker */
-        .ticker-wrap {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 40px;
-            background: rgba(0, 0, 0, 0.8); overflow: hidden; z-index: 10;
-            display: flex; align-items: center;
-        }
-        .ticker {
-            display: inline-block; white-space: nowrap; padding-right: 100%;
-            animation: ticker 60s linear infinite; font-weight: 500; color: var(--accent);
-        }
-        @keyframes ticker {
-            0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(-100%, 0, 0); }
-        }
-        .ticker-item { display: inline-block; padding: 0 2rem; }
+        .ticker-wrap { position: fixed; bottom: 0; left: 0; width: 100%; height: 35px; background: rgba(0, 0, 0, 0.9); z-index: 10; display: flex; align-items: center; overflow: hidden; }
+        .ticker { white-space: nowrap; animation: ticker 60s linear infinite; color: var(--accent); }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
     </style>
 </head>
 <body id="main-body">
@@ -128,11 +72,10 @@
 <div class="page-overlay"></div>
 
 <div id="password-overlay">
-    <div class="login-box">
-        <h2 style="margin-top:0; color: white;">Family Dashboard</h2>
-        <input type="password" id="pass-input" placeholder="Password" autofocus>
-        <br>
-        <button style="background:var(--accent); border:none; padding:10px 20px; border-radius:10px; font-weight:bold; cursor:pointer;" onclick="checkPassword()">UNLOCK</button>
+    <div style="background:#1e293b; padding:40px; border-radius:24px; text-align:center;">
+        <h2 style="color:white">Queenzieburn System</h2>
+        <input type="password" id="pass-input" style="padding:12px; border-radius:8px; border:none; text-align:center;" placeholder="Enter Password" autofocus>
+        <button onclick="checkPassword()" style="margin-top:15px; display:block; width:100%; padding:12px; background:var(--accent); border:none; border-radius:8px; font-weight:bold; cursor:pointer;">UNLOCK</button>
     </div>
 </div>
 
@@ -141,49 +84,48 @@
         <div>
             <div id="clock">00:00</div>
             <div id="date-str">...</div>
-            <div id="kids-countdown" style="margin-top:10px; font-weight:bold; color:var(--accent);">...</div>
+            <div id="kids-countdown" style="font-weight:bold; color:var(--accent); margin-top:10px;">...</div>
+        </div>
+
+        <div class="info-card" style="flex-grow:1;">
+            <span class="info-label">Bus 89: Recreation Ground &rarr; Glasgow</span>
+            <div id="bus-list" class="bus-list">
+                </div>
         </div>
 
         <div class="info-card">
-            <span class="info-label">Monday Bin</span>
-            <div id="bin-display" style="font-weight:bold;">...</div>
-        </div>
-
-        <div class="notes-container" style="flex-grow:1; display:flex; flex-direction:column;">
-            <span class="info-label">Notes</span>
-            <textarea id="notes-area"></textarea>
+            <span class="info-label">Monday Bin Collection</span>
+            <div id="bin-display" style="font-weight:bold; font-size: 1.2rem;">...</div>
         </div>
 
         <div class="info-card" style="text-align:center">
-            <span id="temp" style="font-size: 1.8rem; font-weight:900;">--°C</span>
+            <span id="temp" style="font-size: 2.2rem; font-weight:900;">--°C</span>
         </div>
     </div>
 
-    <div class="calendar-container">
-        <div class="controls">
-            <button class="nav-btn" onclick="changeMonth(-1)">Prev</button>
-            <h2 id="month-name">Month</h2>
-            <button class="nav-btn" onclick="changeMonth(1)">Next</button>
+    <div class="calendar-container" style="display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+            <button onclick="changeMonth(-1)" style="background:none; border:1px solid white; color:white; border-radius:8px; padding:8px 20px; cursor:pointer;">Previous</button>
+            <h2 id="month-name" style="margin:0; font-size: 2.5rem;">Month</h2>
+            <button onclick="changeMonth(1)" style="background:none; border:1px solid white; color:white; border-radius:8px; padding:8px 20px; cursor:pointer;">Next</button>
         </div>
-        <div class="days-grid" id="calendar-days">
-            <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:800;">MON</div>
-            <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:800;">TUE</div>
-            <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:800;">WED</div>
-            <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:800;">THU</div>
-            <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:800;">FRI</div>
-            <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:800;">SAT</div>
-            <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:800;">SUN</div>
-        </div>
+        <div class="days-grid" id="calendar-days"></div>
     </div>
 </div>
 
 <div class="ticker-wrap">
-    <div class="ticker" id="news-ticker">
-        <span class="ticker-item">Fetching local news headlines...</span>
-    </div>
+    <div class="ticker" id="news-ticker">Fetching UK News Headlines...</div>
 </div>
 
 <script>
+    // --- TIMETABLE DATA FROM PDF ---
+    // Times shown are Kilsyth Parkfoot + 4 mins estimate for Recreation Ground
+    const schedule = {
+        weekday: ["06:24", "07:24", "08:22", "09:04", "09:34", "10:04", "10:34", "11:04", "11:34", "12:04", "12:34", "13:04", "13:34", "14:04", "14:34", "15:04", "15:34", "16:04", "16:34", "17:04", "17:35", "18:34", "19:34", "20:29"],
+        saturday: ["06:24", "07:24", "08:22", "09:04", "09:34", "10:04", "10:34", "11:04", "11:34", "12:04", "12:34", "13:04", "13:34", "14:04", "14:34", "15:04", "15:34", "16:04", "16:34", "17:04", "17:35", "18:34", "19:34", "20:29"],
+        sunday: ["08:21", "09:21", "10:21", "11:21", "12:21", "13:21", "14:21", "15:21", "16:21", "17:22", "18:25", "19:25", "20:25"]
+    };
+
     const correctPassword = "1234";
     function checkPassword() {
         if (document.getElementById('pass-input').value === correctPassword) {
@@ -192,55 +134,74 @@
         }
     }
 
+    function updateBusTimes() {
+        const now = new Date();
+        const day = now.getDay();
+        const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        
+        let activeSchedule = schedule.weekday;
+        if (day === 6) activeSchedule = schedule.saturday;
+        if (day === 0) activeSchedule = schedule.sunday;
+
+        const nextBuses = activeSchedule.filter(t => t > currentTime).slice(0, 4);
+        const listEl = document.getElementById('bus-list');
+        listEl.innerHTML = "";
+
+        if (nextBuses.length === 0) {
+            listEl.innerHTML = "<div class='bus-row'>No more buses today</div>";
+            return;
+        }
+
+        nextBuses.forEach(time => {
+            const [h, m] = time.split(':').map(Number);
+            const busDate = new Date(); busDate.setHours(h, m, 0, 0);
+            const diff = Math.round((busDate - now) / 60000);
+            
+            listEl.innerHTML += `
+                <div class="bus-row">
+                    <span class="bus-number">89</span>
+                    <span class="bus-time">${time}</span>
+                    <span class="bus-countdown">${diff}m</span>
+                </div>`;
+        });
+    }
+
     let viewDate = new Date();
     const kidsAnchor = new Date(2026, 3, 24); 
     const binAnchor = new Date(2026, 3, 20); 
-
-    async function fetchNews() {
-        try {
-            // Using a public RSS to JSON converter for UK News
-            const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=http://feeds.bbci.co.uk/news/uk/rss.xml');
-            const data = await res.json();
-            const ticker = document.getElementById('news-ticker');
-            ticker.innerHTML = data.items.map(item => `<span class="ticker-item">${item.title}</span>`).join(' • ');
-        } catch (e) { console.log("News Error"); }
-    }
 
     function buildCalendar() {
         const year = viewDate.getFullYear();
         const month = viewDate.getMonth();
         document.getElementById('month-name').textContent = `${viewDate.toLocaleString('default', { month: 'long' })} ${year}`;
         const container = document.getElementById('calendar-days');
+        container.innerHTML = '';
         
-        // Clear logic... (same as previous stable builds)
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        ['MON','TUE','WED','THU','FRI','SAT','SUN'].forEach(day => {
+            const div = document.createElement('div');
+            div.style.textAlign = 'center'; div.style.fontSize = '0.8rem'; div.style.color = 'var(--text-muted)'; div.style.fontWeight = '800';
+            div.textContent = day; container.appendChild(div);
+        });
+
         let firstDay = new Date(year, month, 1).getDay() - 1;
         if (firstDay === -1) firstDay = 6;
-
-        // Keep headers
-        const headers = Array.from(container.children).slice(0, 7);
-        container.innerHTML = '';
-        headers.forEach(h => container.appendChild(h));
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
 
         for (let i = 0; i < firstDay; i++) container.appendChild(Object.assign(document.createElement('div'), {className:'day', style:'visibility:hidden'}));
 
         for (let d = 1; d <= daysInMonth; d++) {
             const dateObj = new Date(year, month, d);
             const div = document.createElement('div');
-            div.className = 'day';
-            div.textContent = d;
+            div.className = 'day'; div.textContent = d;
 
-            // Reuse existing schedule/bin logic
             const day = dateObj.getDay();
-            let calcDate = new Date(dateObj);
-            if (day === 0) calcDate.setDate(calcDate.getDate() - 1);
+            let calcDate = new Date(dateObj); if (day === 0) calcDate.setDate(calcDate.getDate() - 1);
             const diffWeeks = Math.round((calcDate - kidsAnchor) / (1000 * 60 * 60 * 24 * 7));
             const isKids = (day === 5 || day === 6 || day === 0) && (diffWeeks % 2 === 0);
 
             if (isKids) div.classList.add('kids-weekend');
             if (isKids && day === 5) div.classList.add('changeover-day');
-            if (d === new Date().getDate() && month === new Date().getMonth()) div.classList.add('today');
-
+            if (d === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()) div.classList.add('today');
             container.appendChild(div);
         }
     }
@@ -249,32 +210,46 @@
         const now = new Date();
         document.getElementById('clock').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
         document.getElementById('date-str').textContent = now.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+        
+        // Kids Countdown
+        const kidsStatus = document.getElementById('kids-countdown');
+        let check = new Date(now); check.setHours(0,0,0,0);
+        for(let i=0; i<14; i++) {
+            const day = check.getDay();
+            let calc = new Date(check); if(day===0) calc.setDate(calc.getDate()-1);
+            const diff = Math.round((calc - kidsAnchor)/(1000*60*60*24*7));
+            if((day===5||day===6||day===0) && diff%2===0) {
+                kidsStatus.textContent = i === 0 ? "KIDS ARE HERE! 🏠" : `${i} days until arrival`;
+                break;
+            }
+            check.setDate(check.getDate()+1);
+        }
     }
 
-    // Initialize
-    setInterval(updateClock, 1000);
-    updateClock();
-    buildCalendar();
-    fetchNews();
-    setInterval(fetchNews, 600000); // Update news every 10 mins
+    async function fetchWeather() {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=55.9744&longitude=-4.0886&current_weather=true`);
+        const d = await res.json();
+        document.getElementById('temp').textContent = Math.round(d.current_weather.temperature) + "°C";
+    }
 
-    const notesArea = document.getElementById('notes-area');
-    notesArea.value = localStorage.getItem('dashNotes') || "";
-    notesArea.addEventListener('input', () => localStorage.setItem('dashNotes', notesArea.value));
+    async function fetchNews() {
+        const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=http://feeds.bbci.co.uk/news/uk/rss.xml');
+        const d = await res.json();
+        document.getElementById('news-ticker').innerHTML = d.items.map(i => i.title).join(' • ');
+    }
 
     function changeMonth(dir) { viewDate.setMonth(viewDate.getMonth() + dir); buildCalendar(); }
 
-    // Bin Logic (Same as V2)
+    setInterval(updateClock, 1000);
+    setInterval(updateBusTimes, 30000);
+    updateClock(); updateBusTimes(); buildCalendar(); fetchWeather(); fetchNews();
+
+    // Bin Display
     let nextMon = new Date();
     nextMon.setDate(nextMon.getDate() + (1 + 7 - nextMon.getDay()) % 7);
     const binDiff = Math.floor(Math.round((nextMon - binAnchor)/(1000*60*60*24))/7);
     const bins = ["Blue Recycling", "Green + Brown", "General Waste"];
     document.getElementById('bin-display').textContent = bins[binDiff % 3];
-
-    // Weather
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=55.8785&longitude=-4.3946&current_weather=true`)
-        .then(r => r.json()).then(d => document.getElementById('temp').textContent = Math.round(d.current_weather.temperature) + "°C");
-
 </script>
 </body>
 </html>
