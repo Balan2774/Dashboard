@@ -3,125 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Family Dashboard - Dark Mode</title>
+    <title>Pro Family Dashboard - V3</title>
     <style>
         :root {
-            --bg-color: #0f172a; /* Deep Navy */
-            --card-bg: #1e293b; /* Slate Blue */
+            --bg-overlay: rgba(15, 23, 42, 0.85); /* Dark tint over background */
+            --card-bg: rgba(30, 41, 59, 0.9); /* Semi-transparent Slate Blue */
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
-            --accent: #38bdf8; /* Bright Sky Blue */
-            --kids-bg: #0c4a6e; /* Darker Blue */
+            --accent: #38bdf8;
+            --kids-bg: rgba(12, 74, 110, 0.8);
             --kids-border: #0ea5e9;
             --changeover: #fbbf24;
-            --border: #334155;
+            --border: rgba(51, 65, 85, 0.5);
             --bin-blue: #3b82f6;
             --bin-green: #22c55e;
             --bin-grey: #64748b;
-            --note-bg: #111827;
+            --note-bg: rgba(17, 24, 39, 0.8);
         }
 
         body {
             font-family: 'Inter', 'Segoe UI', sans-serif;
-            background-color: var(--bg-color);
+            background: #0f172a url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80&dark=true') no-repeat center center fixed;
+            background-size: cover;
             color: var(--text-main);
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 0;
             overflow: hidden;
+        }
+
+        /* Darkening Overlay */
+        .page-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-overlay);
+            z-index: 1;
         }
 
         /* Password Overlay */
         #password-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.98);
+            background: rgba(15, 23, 42, 1);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 9999; backdrop-filter: blur(15px); transition: opacity 0.5s ease;
+            z-index: 9999; backdrop-filter: blur(25px); transition: opacity 0.5s ease;
         }
 
         .login-box {
-            background: var(--card-bg);
-            padding: 40px; border-radius: 24px; border: 1px solid var(--border);
+            background: #1e293b;
+            padding: 40px; border-radius: 24px; border: 1px solid #334155;
             text-align: center;
         }
 
         #pass-input {
-            padding: 12px; font-size: 1.2rem; background: var(--bg-color);
-            border: 2px solid var(--border); border-radius: 12px;
+            padding: 12px; font-size: 1.2rem; background: #0f172a;
+            border: 2px solid #334155; border-radius: 12px;
             margin-bottom: 15px; width: 200px; text-align: center; color: white;
         }
 
-        .login-btn {
-            background: var(--accent); color: #0f172a; border: none;
-            padding: 12px 30px; border-radius: 12px; font-weight: 900; cursor: pointer;
-        }
-
-        /* Dashboard Layout */
+        /* Main Container */
         .dashboard {
+            position: relative;
+            z-index: 2;
             display: grid; grid-template-columns: 350px 1fr; gap: 30px;
-            background: var(--card-bg); width: 95vw; max-width: 1400px;
-            height: 85vh; padding: 40px; border-radius: 32px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 95vw; max-width: 1400px;
+            height: 80vh; padding: 40px; border-radius: 32px;
             filter: blur(25px); transition: filter 0.5s ease;
         }
 
         .unlocked .dashboard { filter: blur(0); }
 
-        .sidebar { border-right: 2px solid var(--border); padding-right: 30px; display: flex; flex-direction: column; gap: 25px; height: 100%; }
+        /* Sidebar & Calendar - Similar to previous but with glassmorphism */
+        .sidebar { border-right: 2px solid var(--border); padding-right: 30px; display: flex; flex-direction: column; gap: 20px; height: 100%; }
         #clock { font-size: 4.5rem; font-weight: 900; color: var(--accent); line-height: 1; letter-spacing: -2px; }
-        #date-str { font-size: 1.4rem; color: var(--text-muted); margin-bottom: 5px; }
+        #date-str { font-size: 1.4rem; color: var(--text-muted); }
 
-        .status-badge { padding: 15px; border-radius: 16px; font-weight: 700; text-align: center; font-size: 1.1rem; background: var(--bg-color); color: var(--text-muted); }
-        .status-active { background: var(--kids-bg); color: var(--accent); border: 1px solid var(--kids-border); }
+        .info-card { background: var(--note-bg); padding: 15px; border-radius: 20px; border: 1px solid var(--border); }
+        .info-label { font-weight: 800; color: var(--text-muted); font-size: 0.7rem; letter-spacing: 1.5px; display: block; margin-bottom: 5px; text-transform: uppercase; }
 
-        .info-card { background: var(--bg-color); padding: 20px; border-radius: 20px; border: 1px solid var(--border); }
-        .info-label { font-weight: 800; color: var(--text-muted); font-size: 0.75rem; letter-spacing: 1.5px; display: block; margin-bottom: 10px; text-transform: uppercase; }
-
-        /* Dark Note Area */
-        .notes-container { flex-grow: 1; display: flex; flex-direction: column; }
         #notes-area {
-            flex-grow: 1; width: 100%; border: 2px solid var(--border); border-radius: 16px;
+            flex-grow: 1; width: 100%; border: 1px solid var(--border); border-radius: 16px;
             padding: 15px; font-family: inherit; font-size: 1.1rem; resize: none;
-            box-sizing: border-box; background: var(--note-bg); line-height: 1.5; color: #cbd5e1;
+            box-sizing: border-box; background: rgba(0,0,0,0.2); color: #cbd5e1;
         }
 
-        /* Calendar Styling */
+        /* Calendar */
         .calendar-container { display: flex; flex-direction: column; height: 100%; }
-        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .controls h2 { font-size: 2.5rem; font-weight: 800; color: var(--text-main); margin: 0; }
-        
-        .nav-btn { background: var(--bg-color); border: 2px solid var(--border); border-radius: 12px; padding: 10px 20px; cursor: pointer; font-size: 1.2rem; color: white; transition: 0.2s; }
-        .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .controls h2 { font-size: 2.2rem; margin: 0; }
+        .nav-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 8px 15px; color: white; cursor: pointer; }
 
-        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; flex-grow: 1; }
-        .day-name { font-weight: 800; font-size: 1rem; color: var(--text-muted); text-transform: uppercase; text-align: center; padding-bottom: 15px; }
-        
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; flex-grow: 1; }
         .day {
-            background: var(--bg-color); border: 2px solid var(--border); border-radius: 20px;
+            background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border); border-radius: 15px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 1.5rem; font-weight: 600; position: relative; color: var(--text-main);
+            font-size: 1.4rem; font-weight: 600; position: relative;
         }
-
         .kids-weekend { background-color: var(--kids-bg); border-color: var(--kids-border); }
-        .changeover-day { border: 3px dashed var(--changeover) !important; }
-        .today { background-color: var(--accent) !important; color: #0f172a !important; border-color: var(--accent); transform: scale(1.05); z-index: 10; }
+        .changeover-day { border: 2px dashed var(--changeover) !important; }
+        .today { background-color: var(--accent) !important; color: #0f172a !important; }
 
-        .bin-marker { position: absolute; bottom: 12px; width: 12px; height: 12px; border-radius: 50%; }
-        .empty { visibility: hidden; }
+        /* News Ticker */
+        .ticker-wrap {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 40px;
+            background: rgba(0, 0, 0, 0.8); overflow: hidden; z-index: 10;
+            display: flex; align-items: center;
+        }
+        .ticker {
+            display: inline-block; white-space: nowrap; padding-right: 100%;
+            animation: ticker 60s linear infinite; font-weight: 500; color: var(--accent);
+        }
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+        .ticker-item { display: inline-block; padding: 0 2rem; }
     </style>
 </head>
 <body id="main-body">
+
+<div class="page-overlay"></div>
 
 <div id="password-overlay">
     <div class="login-box">
         <h2 style="margin-top:0; color: white;">Family Dashboard</h2>
         <input type="password" id="pass-input" placeholder="Password" autofocus>
         <br>
-        <button class="login-btn" onclick="checkPassword()">UNLOCK SYSTEM</button>
+        <button style="background:var(--accent); border:none; padding:10px 20px; border-radius:10px; font-weight:bold; cursor:pointer;" onclick="checkPassword()">UNLOCK</button>
     </div>
 </div>
 
@@ -129,99 +140,70 @@
     <div class="sidebar">
         <div>
             <div id="clock">00:00</div>
-            <div id="date-str">Loading...</div>
-            <div id="kids-countdown" class="status-badge">Calculating...</div>
+            <div id="date-str">...</div>
+            <div id="kids-countdown" style="margin-top:10px; font-weight:bold; color:var(--accent);">...</div>
         </div>
 
         <div class="info-card">
-            <span class="info-label">Monday Bin Collection</span>
-            <div id="bin-display" style="font-weight:bold; font-size: 1.2rem;">Loading...</div>
+            <span class="info-label">Monday Bin</span>
+            <div id="bin-display" style="font-weight:bold;">...</div>
         </div>
 
-        <div class="notes-container">
-            <span class="info-label">Notes & Reminders</span>
-            <textarea id="notes-area" placeholder="Type here..."></textarea>
+        <div class="notes-container" style="flex-grow:1; display:flex; flex-direction:column;">
+            <span class="info-label">Notes</span>
+            <textarea id="notes-area"></textarea>
         </div>
 
         <div class="info-card" style="text-align:center">
-            <span class="info-label">Renfrew Weather</span>
-            <span id="temp" style="font-size: 2.2rem; font-weight:900;">--°C</span>
+            <span id="temp" style="font-size: 1.8rem; font-weight:900;">--°C</span>
         </div>
     </div>
 
     <div class="calendar-container">
         <div class="controls">
-            <button class="nav-btn" onclick="changeMonth(-1)">Previous</button>
+            <button class="nav-btn" onclick="changeMonth(-1)">Prev</button>
             <h2 id="month-name">Month</h2>
-            <button class="nav-btn" onclick="changeMonth(1)">Next Month</button>
+            <button class="nav-btn" onclick="changeMonth(1)">Next</button>
         </div>
         <div class="days-grid" id="calendar-days">
-            <div class="day-name">Mon</div><div class="day-name">Tue</div><div class="day-name">Wed</div>
-            <div class="day-name">Thu</div><div class="day-name">Fri</div><div class="day-name">Sat</div>
-            <div class="day-name">Sun</div>
+            <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:800;">MON</div>
+            <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:800;">TUE</div>
+            <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:800;">WED</div>
+            <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:800;">THU</div>
+            <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:800;">FRI</div>
+            <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:800;">SAT</div>
+            <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:800;">SUN</div>
         </div>
     </div>
 </div>
 
-<script>
-    // --- SECURITY ---
-    const correctPassword = "1234"; 
+<div class="ticker-wrap">
+    <div class="ticker" id="news-ticker">
+        <span class="ticker-item">Fetching local news headlines...</span>
+    </div>
+</div>
 
+<script>
+    const correctPassword = "1234";
     function checkPassword() {
-        const input = document.getElementById('pass-input').value;
-        if (input === correctPassword) {
-            document.getElementById('password-overlay').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('password-overlay').style.display = 'none';
-                document.getElementById('main-body').classList.add('unlocked');
-            }, 500);
-        } else {
-            alert("Wrong password!");
-            document.getElementById('pass-input').value = "";
+        if (document.getElementById('pass-input').value === correctPassword) {
+            document.getElementById('password-overlay').style.display = 'none';
+            document.getElementById('main-body').classList.add('unlocked');
         }
     }
 
-    document.getElementById('pass-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPassword(); });
-
-    // --- LOGIC ---
     let viewDate = new Date();
     const kidsAnchor = new Date(2026, 3, 24); 
     const binAnchor = new Date(2026, 3, 20); 
-    const binTypes = [
-        { name: "Blue Recycling", color: "var(--bin-blue)" },
-        { name: "Green + Brown", color: "var(--bin-green)" },
-        { name: "General Waste", color: "var(--bin-grey)" }
-    ];
 
-    function getScheduleInfo(date) {
-        const day = date.getDay(); 
-        const isFriSatSun = (day === 5 || day === 6 || day === 0);
-        if (!isFriSatSun) return { isKidsDay: false, isChangeover: false };
-        let calcDate = new Date(date);
-        if (day === 0) calcDate.setDate(calcDate.getDate() - 1);
-        const diffWeeks = Math.round((calcDate - kidsAnchor) / (1000 * 60 * 60 * 24 * 7));
-        return { isKidsDay: diffWeeks % 2 === 0, isChangeover: (diffWeeks % 2 === 0) && day === 5 };
-    }
-
-    function updateKidsCountdown() {
-        const now = new Date();
-        now.setHours(0,0,0,0);
-        const status = getScheduleInfo(now);
-        const el = document.getElementById('kids-countdown');
-        if (status.isKidsDay) {
-            el.textContent = "KIDS ARE HERE! 🏠";
-            el.classList.add('status-active');
-        } else {
-            let check = new Date(now);
-            for(let i=1; i<20; i++) {
-                check.setDate(check.getDate() + 1);
-                if(check.getDay() === 5 && getScheduleInfo(check).isKidsDay) {
-                    el.textContent = `${i} days until arrival`;
-                    el.classList.remove('status-active');
-                    break;
-                }
-            }
-        }
+    async function fetchNews() {
+        try {
+            // Using a public RSS to JSON converter for UK News
+            const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=http://feeds.bbci.co.uk/news/uk/rss.xml');
+            const data = await res.json();
+            const ticker = document.getElementById('news-ticker');
+            ticker.innerHTML = data.items.map(item => `<span class="ticker-item">${item.title}</span>`).join(' • ');
+        } catch (e) { console.log("News Error"); }
     }
 
     function buildCalendar() {
@@ -229,46 +211,39 @@
         const month = viewDate.getMonth();
         document.getElementById('month-name').textContent = `${viewDate.toLocaleString('default', { month: 'long' })} ${year}`;
         const container = document.getElementById('calendar-days');
-        const headers = Array.from(container.querySelectorAll('.day-name'));
+        
+        // Clear logic... (same as previous stable builds)
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        let firstDay = new Date(year, month, 1).getDay() - 1;
+        if (firstDay === -1) firstDay = 6;
+
+        // Keep headers
+        const headers = Array.from(container.children).slice(0, 7);
         container.innerHTML = '';
         headers.forEach(h => container.appendChild(h));
 
-        let firstDay = new Date(year, month, 1).getDay() - 1;
-        if (firstDay === -1) firstDay = 6;
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        for (let i = 0; i < firstDay; i++) container.appendChild(Object.assign(document.createElement('div'), {className:'day empty'}));
+        for (let i = 0; i < firstDay; i++) container.appendChild(Object.assign(document.createElement('div'), {className:'day', style:'visibility:hidden'}));
 
         for (let d = 1; d <= daysInMonth; d++) {
             const dateObj = new Date(year, month, d);
             const div = document.createElement('div');
             div.className = 'day';
-            div.innerHTML = `<span>${d}</span>`;
+            div.textContent = d;
 
-            const sched = getScheduleInfo(dateObj);
-            if (sched.isKidsDay) div.classList.add('kids-weekend');
-            if (sched.isChangeover) div.classList.add('changeover-day');
-            if (d === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()) div.classList.add('today');
+            // Reuse existing schedule/bin logic
+            const day = dateObj.getDay();
+            let calcDate = new Date(dateObj);
+            if (day === 0) calcDate.setDate(calcDate.getDate() - 1);
+            const diffWeeks = Math.round((calcDate - kidsAnchor) / (1000 * 60 * 60 * 24 * 7));
+            const isKids = (day === 5 || day === 6 || day === 0) && (diffWeeks % 2 === 0);
 
-            if (dateObj.getDay() === 1) {
-                const diffWeeks = Math.floor(Math.round((dateObj - binAnchor)/(1000*60*60*24))/7);
-                if (diffWeeks >= 0) {
-                    const bin = binTypes[diffWeeks % 3];
-                    const marker = document.createElement('div');
-                    marker.className = 'bin-marker';
-                    marker.style.backgroundColor = bin.color;
-                    div.appendChild(marker);
-                }
-            }
+            if (isKids) div.classList.add('kids-weekend');
+            if (isKids && day === 5) div.classList.add('changeover-day');
+            if (d === new Date().getDate() && month === new Date().getMonth()) div.classList.add('today');
+
             container.appendChild(div);
         }
     }
-
-    const notesArea = document.getElementById('notes-area');
-    notesArea.value = localStorage.getItem('dashNotes') || "";
-    notesArea.addEventListener('input', () => localStorage.setItem('dashNotes', notesArea.value));
-
-    function changeMonth(dir) { viewDate.setMonth(viewDate.getMonth() + dir); buildCalendar(); }
 
     function updateClock() {
         const now = new Date();
@@ -276,23 +251,30 @@
         document.getElementById('date-str').textContent = now.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
     }
 
-    async function fetchWeather() {
-        try {
-            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=55.8785&longitude=-4.3946&current_weather=true`);
-            const data = await res.json();
-            document.getElementById('temp').textContent = `${Math.round(data.current_weather.temperature)}°C`;
-        } catch (e) { }
-    }
-
+    // Initialize
     setInterval(updateClock, 1000);
-    updateClock(); buildCalendar(); updateKidsCountdown(); fetchWeather();
-    
+    updateClock();
+    buildCalendar();
+    fetchNews();
+    setInterval(fetchNews, 600000); // Update news every 10 mins
+
+    const notesArea = document.getElementById('notes-area');
+    notesArea.value = localStorage.getItem('dashNotes') || "";
+    notesArea.addEventListener('input', () => localStorage.setItem('dashNotes', notesArea.value));
+
+    function changeMonth(dir) { viewDate.setMonth(viewDate.getMonth() + dir); buildCalendar(); }
+
+    // Bin Logic (Same as V2)
     let nextMon = new Date();
     nextMon.setDate(nextMon.getDate() + (1 + 7 - nextMon.getDay()) % 7);
     const binDiff = Math.floor(Math.round((nextMon - binAnchor)/(1000*60*60*24))/7);
-    const curBin = binTypes[binDiff % 3];
-    document.getElementById('bin-display').innerHTML = `<span style="color:${curBin.color}">●</span> ${curBin.name}`;
-</script>
+    const bins = ["Blue Recycling", "Green + Brown", "General Waste"];
+    document.getElementById('bin-display').textContent = bins[binDiff % 3];
 
+    // Weather
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=55.8785&longitude=-4.3946&current_weather=true`)
+        .then(r => r.json()).then(d => document.getElementById('temp').textContent = Math.round(d.current_weather.temperature) + "°C");
+
+</script>
 </body>
 </html>
