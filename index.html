@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Family Dashboard</title>
+    <title>Pro Family Dashboard - Dark Mode</title>
     <style>
         :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #1e293b;
-            --accent: #0284c7;
-            --kids-bg: #e0f2fe;
+            --bg-color: #0f172a; /* Deep Navy */
+            --card-bg: #1e293b; /* Slate Blue */
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8; /* Bright Sky Blue */
+            --kids-bg: #0c4a6e; /* Darker Blue */
             --kids-border: #0ea5e9;
-            --changeover: #f59e0b;
-            --border: #e2e8f0;
-            --bin-blue: #2563eb;
-            --bin-green: #16a34a;
-            --bin-grey: #475569;
+            --changeover: #fbbf24;
+            --border: #334155;
+            --bin-blue: #3b82f6;
+            --bin-green: #22c55e;
+            --bin-grey: #64748b;
+            --note-bg: #111827;
         }
 
         body {
@@ -35,102 +37,56 @@
         /* Password Overlay */
         #password-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(248, 250, 252, 0.95);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            backdrop-filter: blur(10px);
-            transition: opacity 0.5s ease;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.98);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; backdrop-filter: blur(15px); transition: opacity 0.5s ease;
         }
 
         .login-box {
-            background: white;
-            padding: 40px;
-            border-radius: 24px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            background: var(--card-bg);
+            padding: 40px; border-radius: 24px; border: 1px solid var(--border);
             text-align: center;
         }
 
         #pass-input {
-            padding: 12px;
-            font-size: 1.2rem;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 15px;
-            width: 200px;
-            text-align: center;
+            padding: 12px; font-size: 1.2rem; background: var(--bg-color);
+            border: 2px solid var(--border); border-radius: 12px;
+            margin-bottom: 15px; width: 200px; text-align: center; color: white;
         }
 
         .login-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 12px;
-            font-weight: bold;
-            cursor: pointer;
+            background: var(--accent); color: #0f172a; border: none;
+            padding: 12px 30px; border-radius: 12px; font-weight: 900; cursor: pointer;
         }
 
-        /* Dashboard Blur until unlocked */
+        /* Dashboard Layout */
         .dashboard {
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 30px;
-            background: var(--card-bg);
-            width: 95vw;
-            max-width: 1400px;
-            height: 85vh;
-            padding: 40px;
-            border-radius: 32px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-            filter: blur(20px);
-            transition: filter 0.5s ease;
+            display: grid; grid-template-columns: 350px 1fr; gap: 30px;
+            background: var(--card-bg); width: 95vw; max-width: 1400px;
+            height: 85vh; padding: 40px; border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            filter: blur(25px); transition: filter 0.5s ease;
         }
 
         .unlocked .dashboard { filter: blur(0); }
 
-        /* Sidebar Styling */
-        .sidebar {
-            border-right: 2px solid var(--border);
-            padding-right: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            height: 100%;
-        }
-
+        .sidebar { border-right: 2px solid var(--border); padding-right: 30px; display: flex; flex-direction: column; gap: 25px; height: 100%; }
         #clock { font-size: 4.5rem; font-weight: 900; color: var(--accent); line-height: 1; letter-spacing: -2px; }
-        #date-str { font-size: 1.4rem; color: #64748b; margin-bottom: 5px; }
+        #date-str { font-size: 1.4rem; color: var(--text-muted); margin-bottom: 5px; }
 
-        .status-badge {
-            padding: 15px;
-            border-radius: 16px;
-            font-weight: 700;
-            text-align: center;
-            font-size: 1.1rem;
-            background: #f1f5f9;
-        }
-        .status-active { background: var(--kids-bg); color: var(--kids-border); }
+        .status-badge { padding: 15px; border-radius: 16px; font-weight: 700; text-align: center; font-size: 1.1rem; background: var(--bg-color); color: var(--text-muted); }
+        .status-active { background: var(--kids-bg); color: var(--accent); border: 1px solid var(--kids-border); }
 
-        .info-card {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-        }
-        .info-label { font-weight: 800; color: #94a3b8; font-size: 0.8rem; letter-spacing: 1.5px; display: block; margin-bottom: 10px; text-transform: uppercase; }
+        .info-card { background: var(--bg-color); padding: 20px; border-radius: 20px; border: 1px solid var(--border); }
+        .info-label { font-weight: 800; color: var(--text-muted); font-size: 0.75rem; letter-spacing: 1.5px; display: block; margin-bottom: 10px; text-transform: uppercase; }
 
+        /* Dark Note Area */
         .notes-container { flex-grow: 1; display: flex; flex-direction: column; }
         #notes-area {
-            flex-grow: 1; width: 100%; border: 2px solid #fef3c7; border-radius: 16px; padding: 15px;
-            font-family: inherit; font-size: 1.1rem; resize: none; box-sizing: border-box;
-            background: #fffdf2; line-height: 1.5; color: #451a03;
+            flex-grow: 1; width: 100%; border: 2px solid var(--border); border-radius: 16px;
+            padding: 15px; font-family: inherit; font-size: 1.1rem; resize: none;
+            box-sizing: border-box; background: var(--note-bg); line-height: 1.5; color: #cbd5e1;
         }
 
         /* Calendar Styling */
@@ -138,24 +94,21 @@
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .controls h2 { font-size: 2.5rem; font-weight: 800; color: var(--text-main); margin: 0; }
         
-        .nav-btn { 
-            background: #fff; border: 2px solid var(--border); border-radius: 12px; 
-            padding: 10px 20px; cursor: pointer; font-size: 1.2rem; transition: 0.2s;
-        }
+        .nav-btn { background: var(--bg-color); border: 2px solid var(--border); border-radius: 12px; padding: 10px 20px; cursor: pointer; font-size: 1.2rem; color: white; transition: 0.2s; }
         .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
 
         .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; flex-grow: 1; }
-        .day-name { font-weight: 800; font-size: 1rem; color: #94a3b8; text-transform: uppercase; text-align: center; padding-bottom: 15px; }
+        .day-name { font-weight: 800; font-size: 1rem; color: var(--text-muted); text-transform: uppercase; text-align: center; padding-bottom: 15px; }
         
         .day {
-            background: #fff; border: 2px solid #f1f5f9; border-radius: 20px;
+            background: var(--bg-color); border: 2px solid var(--border); border-radius: 20px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 1.5rem; font-weight: 600; position: relative;
+            font-size: 1.5rem; font-weight: 600; position: relative; color: var(--text-main);
         }
 
-        .kids-weekend { background-color: var(--kids-bg); border-color: var(--kids-border); color: var(--kids-border); }
+        .kids-weekend { background-color: var(--kids-bg); border-color: var(--kids-border); }
         .changeover-day { border: 3px dashed var(--changeover) !important; }
-        .today { background-color: var(--accent) !important; color: white !important; border-color: var(--accent); }
+        .today { background-color: var(--accent) !important; color: #0f172a !important; border-color: var(--accent); transform: scale(1.05); z-index: 10; }
 
         .bin-marker { position: absolute; bottom: 12px; width: 12px; height: 12px; border-radius: 50%; }
         .empty { visibility: hidden; }
@@ -165,10 +118,10 @@
 
 <div id="password-overlay">
     <div class="login-box">
-        <h2 style="margin-top:0">Family Dashboard</h2>
-        <input type="password" id="pass-input" placeholder="Enter Password" autofocus>
+        <h2 style="margin-top:0; color: white;">Family Dashboard</h2>
+        <input type="password" id="pass-input" placeholder="Password" autofocus>
         <br>
-        <button class="login-btn" onclick="checkPassword()">Unlock</button>
+        <button class="login-btn" onclick="checkPassword()">UNLOCK SYSTEM</button>
     </div>
 </div>
 
@@ -181,13 +134,13 @@
         </div>
 
         <div class="info-card">
-            <span class="info-label">Monday Bin</span>
+            <span class="info-label">Monday Bin Collection</span>
             <div id="bin-display" style="font-weight:bold; font-size: 1.2rem;">Loading...</div>
         </div>
 
         <div class="notes-container">
             <span class="info-label">Notes & Reminders</span>
-            <textarea id="notes-area" placeholder="Type reminders here..."></textarea>
+            <textarea id="notes-area" placeholder="Type here..."></textarea>
         </div>
 
         <div class="info-card" style="text-align:center">
@@ -211,8 +164,8 @@
 </div>
 
 <script>
-    // --- SECURITY LOGIC ---
-    const correctPassword = "666555"; // CHANGE YOUR PASSWORD HERE
+    // --- SECURITY ---
+    const correctPassword = "1234"; 
 
     function checkPassword() {
         const input = document.getElementById('pass-input').value;
@@ -223,17 +176,14 @@
                 document.getElementById('main-body').classList.add('unlocked');
             }, 500);
         } else {
-            alert("Incorrect Password");
+            alert("Wrong password!");
             document.getElementById('pass-input').value = "";
         }
     }
 
-    // Allow Enter key to submit password
-    document.getElementById('pass-input').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') checkPassword();
-    });
+    document.getElementById('pass-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPassword(); });
 
-    // --- DASHBOARD LOGIC ---
+    // --- LOGIC ---
     let viewDate = new Date();
     const kidsAnchor = new Date(2026, 3, 24); 
     const binAnchor = new Date(2026, 3, 20); 
@@ -250,8 +200,7 @@
         let calcDate = new Date(date);
         if (day === 0) calcDate.setDate(calcDate.getDate() - 1);
         const diffWeeks = Math.round((calcDate - kidsAnchor) / (1000 * 60 * 60 * 24 * 7));
-        const activeWeek = diffWeeks % 2 === 0;
-        return { isKidsDay: activeWeek, isChangeover: activeWeek && day === 5 };
+        return { isKidsDay: diffWeeks % 2 === 0, isChangeover: (diffWeeks % 2 === 0) && day === 5 };
     }
 
     function updateKidsCountdown() {
@@ -279,7 +228,6 @@
         const year = viewDate.getFullYear();
         const month = viewDate.getMonth();
         document.getElementById('month-name').textContent = `${viewDate.toLocaleString('default', { month: 'long' })} ${year}`;
-        
         const container = document.getElementById('calendar-days');
         const headers = Array.from(container.querySelectorAll('.day-name'));
         container.innerHTML = '';
@@ -337,10 +285,7 @@
     }
 
     setInterval(updateClock, 1000);
-    updateClock();
-    buildCalendar();
-    updateKidsCountdown();
-    fetchWeather();
+    updateClock(); buildCalendar(); updateKidsCountdown(); fetchWeather();
     
     let nextMon = new Date();
     nextMon.setDate(nextMon.getDate() + (1 + 7 - nextMon.getDay()) % 7);
