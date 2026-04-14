@@ -29,8 +29,55 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            overflow: hidden;
         }
 
+        /* Password Overlay */
+        #password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(248, 250, 252, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+            transition: opacity 0.5s ease;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        #pass-input {
+            padding: 12px;
+            font-size: 1.2rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            width: 200px;
+            text-align: center;
+        }
+
+        .login-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Dashboard Blur until unlocked */
         .dashboard {
             display: grid;
             grid-template-columns: 350px 1fr;
@@ -42,9 +89,13 @@
             padding: 40px;
             border-radius: 32px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            filter: blur(20px);
+            transition: filter 0.5s ease;
         }
 
-        /* Sidebar Expansion */
+        .unlocked .dashboard { filter: blur(0); }
+
+        /* Sidebar Styling */
         .sidebar {
             border-right: 2px solid var(--border);
             padding-right: 30px;
@@ -75,77 +126,51 @@
         }
         .info-label { font-weight: 800; color: #94a3b8; font-size: 0.8rem; letter-spacing: 1.5px; display: block; margin-bottom: 10px; text-transform: uppercase; }
 
-        /* Expanded Notes Area */
-        .notes-container {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
+        .notes-container { flex-grow: 1; display: flex; flex-direction: column; }
         #notes-area {
-            flex-grow: 1;
-            width: 100%;
-            border: 2px solid #fef3c7;
-            border-radius: 16px;
-            padding: 15px;
-            font-family: inherit;
-            font-size: 1.1rem;
-            resize: none;
-            box-sizing: border-box;
-            background: #fffdf2;
-            line-height: 1.5;
-            color: #451a03;
+            flex-grow: 1; width: 100%; border: 2px solid #fef3c7; border-radius: 16px; padding: 15px;
+            font-family: inherit; font-size: 1.1rem; resize: none; box-sizing: border-box;
+            background: #fffdf2; line-height: 1.5; color: #451a03;
         }
 
-        /* Large Calendar Expansion */
-        .calendar-container {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
+        /* Calendar Styling */
+        .calendar-container { display: flex; flex-direction: column; height: 100%; }
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .controls h2 { font-size: 2.5rem; font-weight: 800; color: var(--text-main); }
+        .controls h2 { font-size: 2.5rem; font-weight: 800; color: var(--text-main); margin: 0; }
         
-        button { 
+        .nav-btn { 
             background: #fff; border: 2px solid var(--border); border-radius: 12px; 
             padding: 10px 20px; cursor: pointer; font-size: 1.2rem; transition: 0.2s;
         }
-        button:hover { border-color: var(--accent); color: var(--accent); }
+        .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-        .days-grid { 
-            display: grid; 
-            grid-template-columns: repeat(7, 1fr); 
-            gap: 12px; 
-            flex-grow: 1;
-        }
-
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; flex-grow: 1; }
         .day-name { font-weight: 800; font-size: 1rem; color: #94a3b8; text-transform: uppercase; text-align: center; padding-bottom: 15px; }
         
         .day {
-            background: #fff;
-            border: 2px solid #f1f5f9;
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 600;
-            position: relative;
-            transition: transform 0.1s;
+            background: #fff; border: 2px solid #f1f5f9; border-radius: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: 600; position: relative;
         }
 
         .kids-weekend { background-color: var(--kids-bg); border-color: var(--kids-border); color: var(--kids-border); }
         .changeover-day { border: 3px dashed var(--changeover) !important; }
-        .today { background-color: var(--accent) !important; color: white !important; border-color: var(--accent); transform: scale(1.05); z-index: 10; }
+        .today { background-color: var(--accent) !important; color: white !important; border-color: var(--accent); }
 
-        .bin-marker { 
-            position: absolute; bottom: 12px; width: 12px; height: 12px; border-radius: 50%; 
-        }
+        .bin-marker { position: absolute; bottom: 12px; width: 12px; height: 12px; border-radius: 50%; }
         .empty { visibility: hidden; }
     </style>
 </head>
-<body>
+<body id="main-body">
+
+<div id="password-overlay">
+    <div class="login-box">
+        <h2 style="margin-top:0">Family Dashboard</h2>
+        <input type="password" id="pass-input" placeholder="Enter Password" autofocus>
+        <br>
+        <button class="login-btn" onclick="checkPassword()">Unlock</button>
+    </div>
+</div>
 
 <div class="dashboard">
     <div class="sidebar">
@@ -162,7 +187,7 @@
 
         <div class="notes-container">
             <span class="info-label">Notes & Reminders</span>
-            <textarea id="notes-area" placeholder="Type school events, gym times, or shopping lists here..."></textarea>
+            <textarea id="notes-area" placeholder="Type reminders here..."></textarea>
         </div>
 
         <div class="info-card" style="text-align:center">
@@ -173,9 +198,9 @@
 
     <div class="calendar-container">
         <div class="controls">
-            <button onclick="changeMonth(-1)">Previous</button>
+            <button class="nav-btn" onclick="changeMonth(-1)">Previous</button>
             <h2 id="month-name">Month</h2>
-            <button onclick="changeMonth(1)">Next Month</button>
+            <button class="nav-btn" onclick="changeMonth(1)">Next Month</button>
         </div>
         <div class="days-grid" id="calendar-days">
             <div class="day-name">Mon</div><div class="day-name">Tue</div><div class="day-name">Wed</div>
@@ -186,6 +211,29 @@
 </div>
 
 <script>
+    // --- SECURITY LOGIC ---
+    const correctPassword = "666555"; // CHANGE YOUR PASSWORD HERE
+
+    function checkPassword() {
+        const input = document.getElementById('pass-input').value;
+        if (input === correctPassword) {
+            document.getElementById('password-overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('password-overlay').style.display = 'none';
+                document.getElementById('main-body').classList.add('unlocked');
+            }, 500);
+        } else {
+            alert("Incorrect Password");
+            document.getElementById('pass-input').value = "";
+        }
+    }
+
+    // Allow Enter key to submit password
+    document.getElementById('pass-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') checkPassword();
+    });
+
+    // --- DASHBOARD LOGIC ---
     let viewDate = new Date();
     const kidsAnchor = new Date(2026, 3, 24); 
     const binAnchor = new Date(2026, 3, 20); 
