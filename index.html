@@ -3,15 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Queenzieburn Command Center v20</title>
+    <title>Queenzieburn Command Center v21</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         :root {
-            --bg-overlay: rgba(15, 23, 42, 0.92);
+            --bg-overlay: rgba(15, 23, 42, 0.94);
             --card-bg: rgba(30, 41, 59, 0.85);
             --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
             --accent: #38bdf8;
+            --kids-bg: rgba(12, 74, 110, 0.8);
+            --kids-border: #0ea5e9;
+            --changeover: #fbbf24;
             --border: rgba(51, 65, 85, 0.8);
+            --bin-blue: #3b82f6;
+            --bin-green: #22c55e;
+            --bin-grey: #64748b;
             --news-red: #cc0000;
         }
 
@@ -23,88 +30,209 @@
             margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden;
         }
 
-        /* FIX: High Z-Index for Unlock Screen */
+        /* --- UNLOCK SCREEN FIX --- */
         #password-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #0f172a; display: flex; justify-content: center; align-items: center;
-            z-index: 10000; /* Ensure it is above EVERYTHING */
+            z-index: 10000; transition: opacity 0.5s ease;
         }
-
         .modal { 
-            background: var(--card-bg); padding: 40px; border-radius: 24px; 
-            border: 1px solid var(--border); width: 90%; max-width: 400px; 
-            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            position: relative; z-index: 10001; /* Prevent blur interference */
+            background: var(--card-bg); padding: 40px; border-radius: 24px; border: 1px solid var(--border); 
+            width: 90%; max-width: 380px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.7);
         }
-
         input { 
-            width: 100%; padding: 15px; margin: 15px 0; border-radius: 12px; 
-            border: 2px solid var(--border); background: #0f172a; color: white; 
-            box-sizing: border-box; font-size: 1.2rem; text-align: center;
+            width: 100%; padding: 15px; margin: 15px 0; border-radius: 12px; border: 1px solid var(--border);
+            background: #0f172a; color: white; text-align: center; font-size: 1.2rem;
         }
 
-        .unlock-btn { 
-            background: var(--accent); color: #0f172a; border: none; 
-            padding: 15px 30px; border-radius: 12px; font-weight: 900; 
-            cursor: pointer; width: 100%; font-size: 1.1rem;
-        }
-
+        /* --- DASHBOARD LAYOUT --- */
         .dashboard {
             position: relative; z-index: 2; display: grid; grid-template-columns: 320px 1fr;
             gap: 25px; width: 95vw; max-width: 1400px; margin: auto; padding: 20px;
             filter: blur(25px); transition: filter 0.8s ease;
         }
-        
-        /* Transition fix for modern browsers */
         .unlocked .dashboard { filter: blur(0) !important; pointer-events: auto !important; }
 
-        /* Other styles remain consistent with v19... */
+        @media (max-width: 900px) {
+            .dashboard { grid-template-columns: 1fr; padding: 10px; margin-bottom: 60px; }
+            .sidebar { border-right: none !important; border-bottom: 1px solid var(--border); padding-right: 0 !important; padding-bottom: 20px; }
+        }
+
+        .sidebar { border-right: 1px solid var(--border); padding-right: 25px; display: flex; flex-direction: column; gap: 20px; }
+        .header-row { display: flex; justify-content: space-between; align-items: flex-start; }
+        #clock { font-size: 3.5rem; font-weight: 900; color: var(--accent); line-height: 1; }
+        .settings-icon { cursor: pointer; font-size: 1.6rem; opacity: 0.6; transition: 0.3s; padding-top: 5px; }
+
+        .info-card { background: rgba(15, 23, 42, 0.6); padding: 15px; border-radius: 20px; border: 1px solid var(--border); }
+        .info-label { font-weight: 800; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .bus-row { display: flex; justify-content: space-between; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 5px; }
+
+        .tab-nav { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: white; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: bold; flex-grow: 1; }
+        .tab-btn.active { background: var(--accent); color: #0f172a; border-color: var(--accent); }
+
+        .artwork-img { width: 180px; height: 180px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: cover; margin-bottom: 15px; }
+
+        /* --- TV TICKER --- */
+        .news-banner {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 50px;
+            background: rgba(15, 23, 42, 0.98); z-index: 100;
+            display: flex; align-items: center; border-top: 3px solid var(--news-red);
+        }
+        .news-tag {
+            background: var(--news-red); color: white; height: 100%; padding: 0 20px;
+            display: flex; align-items: center; font-weight: 900; letter-spacing: 1px;
+        }
+        .ticker-container { flex-grow: 1; overflow: hidden; }
+        .ticker-move { white-space: nowrap; animation: ticker 70s linear infinite; font-size: 1.1rem; }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+        .day { background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border); border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 600; min-height: 80px; }
+        .kids-weekend { background: var(--kids-bg); border-color: var(--kids-border); }
+        .today { background: var(--accent) !important; color: #0f172a !important; }
+        .bin-dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 5px; }
     </style>
 </head>
 <body id="main-body">
 
 <div id="password-overlay">
     <div class="modal">
-        <h2 style="margin-top:0">System Locked</h2>
-        <p style="color:var(--accent); font-size:0.9rem;">Queenzieburn Command Center</p>
+        <h2 style="margin:0">System Locked</h2>
         <input type="password" id="pass-input" placeholder="Enter PIN" autofocus>
-        <button class="unlock-btn" onclick="checkPassword()">UNLOCK SYSTEM</button>
+        <button class="tab-btn active" style="width:100%" onclick="checkPassword()">UNLOCK</button>
     </div>
 </div>
 
+<div class="dashboard">
+    <div class="sidebar">
+        <div class="header-row">
+            <div>
+                <div id="clock">00:00</div>
+                <div id="date-str">...</div>
+            </div>
+            <div class="settings-icon" onclick="openSettings()">⚙️</div>
+        </div>
+        <div id="kids-countdown" style="font-weight:bold; color:var(--accent);">...</div>
+        <div class="info-card">
+            <span class="info-label">Next Monday Bin</span>
+            <div id="bin-display" style="font-weight:bold; color: var(--accent);">...</div>
+        </div>
+        <div class="info-card">
+            <span class="info-label">Bus 89 → Glasgow</span>
+            <div id="bus-list"></div>
+        </div>
+        <div class="info-card" id="weather-info" style="text-align:center; font-size: 2rem; font-weight: 900;">...</div>
+    </div>
+
+    <div class="main-content">
+        <div class="tab-nav">
+            <button class="tab-btn active" id="tab-kids" onclick="switchTab('kids')">Family</button>
+            <button class="tab-btn" id="tab-bins" onclick="switchTab('bins')">Bins</button>
+            <button class="tab-btn" id="tab-media" onclick="switchTab('media')">Media</button>
+        </div>
+        <div id="calendar-view">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <button onclick="changeMonth(-1)" class="tab-btn" style="flex-grow:0;"><</button>
+                <h2 id="month-name" style="margin:0;">...</h2>
+                <button onclick="changeMonth(1)" class="tab-btn" style="flex-grow:0;">></button>
+            </div>
+            <div class="days-grid" id="calendar-days"></div>
+        </div>
+        <div id="media-view" style="display:none; text-align:center;">
+            <img id="artwork" class="artwork-img" src="" alt="Artwork">
+            <div id="track-title" style="font-weight:bold; font-size:1.2rem;">Select Station</div>
+            <div id="track-artist" style="color:var(--accent); margin-bottom:15px;">Live Stream</div>
+            <select id="station-select" onchange="changeStation()">
+                <option value="s625848e0c">BBC Radio Scotland</option>
+                <option value="s23057e2c9">BBC Radio 2</option>
+                <option value="s3b6e8e815">Heart Scotland</option>
+            </select>
+            <audio id="audio-player"></audio>
+            <button class="tab-btn active" style="margin-top:20px; width:200px;" onclick="togglePlay()">PLAY / PAUSE</button>
+        </div>
+    </div>
+</div>
+
+<div class="news-banner">
+    <div class="news-tag">UK NEWS</div>
+    <div class="ticker-container"><div class="ticker-move" id="news-ticker">Fetching Headlines...</div></div>
+</div>
+
 <script>
-    // FIX: Get Password from LocalStorage or Default
-    const getStoredPass = () => localStorage.getItem('dashPass') || "1234";
+    const config = {
+        password: localStorage.getItem('dashPass') || "1234",
+        kidsAnchor: localStorage.getItem('kidsAnchor') || "2026-04-24",
+        binAnchor: localStorage.getItem('binAnchor') || "2026-04-20"
+    };
 
     function checkPassword() {
-        const input = document.getElementById('pass-input').value;
-        const correct = getStoredPass();
-        
-        if (input === correct) {
-            // Smooth fade out
-            const overlay = document.getElementById('password-overlay');
-            overlay.style.opacity = '0';
-            overlay.style.transition = 'opacity 0.5s ease';
-            
+        if (document.getElementById('pass-input').value === config.password) {
+            document.getElementById('password-overlay').style.opacity = '0';
             setTimeout(() => {
-                overlay.style.display = 'none';
+                document.getElementById('password-overlay').style.display = 'none';
                 document.getElementById('main-body').classList.add('unlocked');
             }, 500);
-        } else {
-            alert("Access Denied");
-            document.getElementById('pass-input').value = "";
+        }
+    }
+    document.getElementById('pass-input').addEventListener('keydown', (e) => { if(e.key==='Enter') checkPassword(); });
+
+    let activeTab = 'kids', viewDate = new Date();
+    const busSchedule = ["06:24", "07:24", "08:22", "09:04", "09:34", "10:04", "10:34", "11:04", "11:34", "12:04", "12:34", "13:04", "13:34", "14:04", "14:34", "15:04", "15:34", "16:04", "16:34", "17:04", "17:35", "18:34", "19:34", "20:29"];
+
+    function buildCalendar() {
+        const year = viewDate.getFullYear(), month = viewDate.getMonth();
+        document.getElementById('month-name').innerText = viewDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+        const container = document.getElementById('calendar-days'); container.innerHTML = '';
+        ['M','T','W','T','F','S','S'].forEach(d => container.innerHTML += `<div style="text-align:center; font-size:0.7rem; color:var(--text-muted)">${d}</div>`);
+        let first = new Date(year, month, 1).getDay() - 1; if (first === -1) first = 6;
+        for (let i = 0; i < first; i++) container.innerHTML += '<div></div>';
+        for (let d = 1; d <= new Date(year, month+1, 0).getDate(); d++) {
+            const date = new Date(year, month, d), isToday = d === new Date().getDate() && month === new Date().getMonth();
+            const diff = Math.floor((date - new Date(config.kidsAnchor))/(7*24*60*60*1000));
+            let cls = isToday ? 'day today' : 'day';
+            if ((date.getDay()===5||date.getDay()===6||date.getDay()===0) && diff%2===0 && activeTab==='kids') cls += ' kids-weekend';
+            let content = `<span>${d}</span>`;
+            if (activeTab==='bins' && date.getDay()===1) {
+                const bIdx = Math.floor((date - new Date(config.binAnchor))/(7*24*60*60*1000)) % 3;
+                const colors = ['#3b82f6', '#22c55e', '#64748b'];
+                content += `<div class="bin-dot" style="background:${colors[bIdx]}"></div>`;
+            }
+            container.innerHTML += `<div class="${cls}">${content}</div>`;
         }
     }
 
-    // FIX: Universal listener for "Enter" key on TV remotes and Mobile
-    document.getElementById('pass-input').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault(); // Prevents page reload
-            checkPassword();
-        }
-    });
+    function switchTab(t) {
+        activeTab = t; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-'+t).classList.add('active');
+        document.getElementById('calendar-view').style.display = t==='media' ? 'none' : 'block';
+        document.getElementById('media-view').style.display = t==='media' ? 'block' : 'none';
+        if(t!=='media') buildCalendar();
+    }
 
-    // Re-include core functions from v19 (Calendar, Weather, Bus Times, etc.)
+    function changeStation() {
+        const id = document.getElementById('station-select').value;
+        const p = document.getElementById('audio-player'); p.src = `https://streaming.radio.co/${id}/listen`; p.play();
+        fetch(`https://public.radio.co/api/v2/${id}/track/current`).then(r=>r.json()).then(d=>{
+            document.getElementById('track-title').innerText = d.data.track_title;
+            document.getElementById('track-artist').innerText = d.data.track_artist;
+            document.getElementById('artwork').src = d.data.artwork_urls.standard;
+        });
+    }
+
+    function togglePlay() { const p = document.getElementById('audio-player'); if(p.paused) p.play(); else p.pause(); }
+
+    function updateTick() {
+        const now = new Date(); document.getElementById('clock').innerText = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        document.getElementById('date-str').innerText = now.toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
+        const b = busSchedule.filter(t => t > now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:false})).slice(0,3);
+        document.getElementById('bus-list').innerHTML = b.map(t => `<div class="bus-row"><span>89</span><span>${t}</span></div>`).join('');
+    }
+
+    setInterval(updateTick, 1000); buildCalendar(); updateTick();
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=55.9744&longitude=-4.0886&current_weather=true`).then(r=>r.json()).then(d=>document.getElementById('weather-info').innerText = Math.round(d.current_weather.temperature)+'°C');
+    fetch('https://api.rss2json.com/v1/api.json?rss_url=http://feeds.bbci.co.uk/news/uk/rss.xml').then(r=>r.json()).then(d=>document.getElementById('news-ticker').innerText = d.items.map(i=>i.title).join(' • '));
+    function changeMonth(d) { viewDate.setMonth(viewDate.getMonth()+d); buildCalendar(); }
 </script>
 </body>
 </html>
