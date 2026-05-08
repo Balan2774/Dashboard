@@ -3,27 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payroll Hub: Quick Copy Edition</title>
+    <title>Payroll Hub Pro</title>
     <style>
         :root { --primary: #005ea5; --bg: #f3f2f1; --card: #ffffff; --accent: #00703c; --text: #0b0c0c; }
         body { font-family: "Segoe UI", Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); }
+        
         .tabs { display: flex; background: #ffffff; border-bottom: 2px solid #b1b4b6; position: sticky; top: 0; z-index: 100; }
-        .tab-btn { padding: 15px 20px; border: none; background: none; cursor: pointer; font-size: 0.9rem; font-weight: bold; color: #505a5f; flex: 1; text-align: center; }
+        .tab-btn { padding: 15px 10px; border: none; background: none; cursor: pointer; font-size: 0.9rem; font-weight: bold; color: #505a5f; flex: 1; text-align: center; }
         .tab-btn.active { color: var(--primary); border-bottom: 4px solid var(--primary); margin-bottom: -2px; }
+
         .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+
+        .paste-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; background: #fff; padding: 15px; border: 1px solid #b1b4b6; }
+        .paste-row label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; color: var(--primary); }
+        .paste-row input { width: 100%; padding: 8px; border: 2px dashed var(--primary); box-sizing: border-box; }
+        
+        .excel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .column { border-radius: 4px; border: 1px solid #b1b4b6; background: #fff; overflow: hidden; }
+        .col-header { padding: 10px; text-align: center; font-weight: bold; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .col-yellow { background-color: #fffde7; } .col-yellow .col-header { background: #fbc02d; }
+        .col-blue { background-color: #e3f2fd; } .col-blue .col-header { background: #2196f3; color: white; }
+        .col-green { background-color: #e8f5e9; } .col-green .col-header { background: #4caf50; color: white; }
+        
+        .row-item { display: flex; justify-content: space-between; padding: 5px 8px; border-bottom: 1px solid rgba(0,0,0,0.05); align-items: center; }
+        .row-item label { font-size: 0.75rem; font-weight: bold; }
+        .row-item input { width: 70px; border: 1px solid #999; text-align: right; padding: 3px; font-family: monospace; }
+        .total-row { background: rgba(0,0,0,0.08); font-weight: bold; font-size: 0.85rem; }
+        
+        .grand-total { background: #fce4ec; border: 2px solid #f06292; padding: 15px; margin-top: 15px; font-size: 1.2rem; font-weight: bold; display: flex; justify-content: space-between; border-radius: 4px; }
+
         .card { background: var(--card); padding: 20px; border: 1px solid #b1b4b6; border-radius: 4px; }
-        .btn { background: var(--primary); color: white; border: none; padding: 10px 15px; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 0.85rem; }
+        .subject-box { background: #fffbe6; border: 1px solid #ffe58f; padding: 15px; margin-bottom: 20px; font-family: monospace; font-size: 0.85rem; color: #856404; position: relative; border-radius: 4px; }
+        #emailBody { min-height: 400px; border: 2px solid #0b0c0c; padding: 15px; background: #fff; overflow-y: auto; line-height: 1.5; border-radius: 4px; }
+        
+        .btn { background: var(--primary); color: white; border: none; padding: 10px 15px; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 0.8rem; }
         .btn:hover { background: #002d18; }
         .btn-copy { background: #505a5f; }
+        .btn-transfer { background: var(--accent); width: 100%; margin-top: 10px; }
         .btn-danger { background: #d4351c; }
-        .btn-accent { background: var(--accent); }
-        .lib-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #ddd; background: #fff; }
-        .lib-info { font-weight: bold; font-size: 1rem; }
-        .action-group { display: flex; gap: 5px; }
-        /* Hidden element for rich text copying */
-        #hiddenClipboard { position: absolute; left: -9999px; }
+        .toolbar { margin-bottom: 10px; display: flex; gap: 8px; }
+        .lib-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #ddd; background: #fff; }
     </style>
 </head>
 <body>
@@ -35,25 +56,48 @@
     <button class="tab-btn" onclick="openTab(event, 'email')">Composer</button>
 </nav>
 
-<div id="hiddenClipboard" contenteditable="true"></div>
-
 <div class="container">
-    <section id="calc" class="tab-content active"><div class="card"><h2>Calculator</h2><p>Calculator logic active...</p></div></section>
-    <section id="contacts" class="tab-content"><div class="card"><h2>Contacts</h2><p>Contact logic active...</p></div></section>
+    <section id="calc" class="tab-content active">
+        <div class="paste-row">
+            <div><label>V1 Horizontal Paste</label><input type="text" oninput="hPaste(event, 1)"></div>
+            <div><label>V2 Horizontal Paste</label><input type="text" oninput="hPaste(event, 2)"></div>
+            <div><label>V3 Horizontal Paste</label><input type="text" oninput="hPaste(event, 3)"></div>
+        </div>
+        <div id="grid" class="excel-grid"></div>
+        <div class="grand-total"><span>Overall Earnings</span><span id="grand-total-val">£0.00</span></div>
+        <button class="btn btn-transfer" onclick="transferData()">Transfer Total to Email</button>
+    </section>
+
+    <section id="contacts" class="tab-content">
+        <div class="card">
+            <h2>Contacts</h2>
+            <div style="display:flex; gap:10px; margin-bottom:15px; align-items:flex-end;">
+                <div style="flex:1;"><label style="font-weight:bold; font-size:0.8rem;">Import CSV</label><input type="file" id="csvIn" accept=".csv" style="width:100%;"></div>
+                <button class="btn" onclick="importCSV()">Upload</button>
+                <button class="btn btn-danger" onclick="clearContacts()">Clear</button>
+            </div>
+            <div id="contactDisplay"></div>
+        </div>
+    </section>
 
     <section id="saved" class="tab-content">
         <div class="card">
             <h2>Template Library</h2>
-            <p style="font-size:0.8rem; color:#666; margin-bottom:15px;">Use "Copy" to grab text instantly, or "Load" to edit in the Composer.</p>
             <div id="libraryItems"></div>
         </div>
     </section>
 
     <section id="email" class="tab-content">
         <div class="card">
-            <h2>Composer</h2>
-            <div id="emailBody" contenteditable="true" style="min-height:300px; border:1px solid #000; padding:10px;"></div>
-            <button class="btn btn-accent" style="margin-top:10px;" onclick="saveToLibrary()">Save Current to Library</button>
+            <div class="subject-box">
+                <span id="fullSubject"></span>
+                <button class="btn btn-copy" style="padding: 4px 8px; font-size: 0.7rem; position: absolute; right: 10px; top: 10px;" onclick="copySubject()">Copy</button>
+            </div>
+            <div class="toolbar">
+                <button class="btn btn-copy" onclick="copyEmail()">Copy Email Body</button>
+                <button class="btn" style="background:var(--accent)" onclick="saveToLibrary()">Save to Library</button>
+            </div>
+            <div id="emailBody" contenteditable="true"></div>
         </div>
     </section>
 </div>
@@ -66,65 +110,109 @@
         if(e) e.currentTarget.classList.add("active");
     }
 
-    // Direct Copy Function for Library
-    async function quickCopy(index) {
-        const library = JSON.parse(localStorage.getItem('payrollLibraryFinal') || '[]');
-        const content = library[index].content;
-        
-        const blob = new Blob([content], { type: "text/html" });
-        const data = [new ClipboardItem({ 
-            "text/html": blob, 
-            "text/plain": new Blob([content.replace(/<[^>]*>/g, '')], {type: "text/plain"}) 
-        })];
-        
-        await navigator.clipboard.write(data);
-        alert("Template '" + library[index].title + "' copied directly to clipboard!");
+    const rows = ["Current YTD", "Tax YTD", "NI YTD", "RAS YTD", "Benefits", "Total 1", "Prev YTD", "Tax YTD", "NI YTD", "RAS YTD", "Benefits", "Total 2", "Pension", "Earnings"];
+    
+    function initGrid() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        [1,2,3].forEach(colNum => {
+            const div = document.createElement('div');
+            div.className = `column col-${['yellow','blue','green'][colNum-1]}`;
+            div.innerHTML = `<div class="col-header">Variable ${colNum}</div>`;
+            rows.forEach((r, i) => {
+                const isTotal = r.includes("Total") || r === "Earnings";
+                div.innerHTML += `<div class="row-item ${isTotal ? 'total-row' : ''}">
+                    <label>${r}</label>
+                    ${isTotal ? `<span id="v${colNum}-r${i}">£0.00</span>` : `<input type="number" step="0.01" class="v${colNum}-in" oninput="calc()">`}
+                </div>`;
+            });
+            grid.appendChild(div);
+        });
     }
 
+    function hPaste(e, col) {
+        const parts = e.target.value.split(/[\t\s]{2,}/).map(p => p.trim()).filter(p => p !== "");
+        const inputs = document.querySelectorAll(`.v${col}-in`);
+        parts.forEach((v, i) => { if(inputs[i]) inputs[i].value = v.replace(/[£,]/g, ""); });
+        e.target.value = ""; 
+        calc();
+    }
+
+    function calc() {
+        let grand = 0;
+        [1,2,3].forEach(n => {
+            const v = Array.from(document.querySelectorAll(`.v${n}-in`)).map(i => parseFloat(i.value) || 0);
+            const t1 = v[0] - (v[1]+v[2]+v[3]+v[4]), t2 = v[5] - (v[6]+v[7]+v[8]+v[9]), final = t1 - t2 - v[10];
+            document.getElementById(`v${n}-r5`).innerText = fGBP(t1);
+            document.getElementById(`v${n}-r11`).innerText = fGBP(t2);
+            document.getElementById(`v${n}-r13`).innerText = fGBP(final);
+            grand += final;
+        });
+        document.getElementById('grand-total-val').innerText = fGBP(grand);
+    }
+
+    function fGBP(n) { return new Intl.NumberFormat('en-GB', {style:'currency', currency:'GBP'}).format(n); }
+
+    function getRequiredDate() {
+        let d = new Date(), added = 0;
+        while(added < 2) { d.setDate(d.getDate()+1); if(d.getDay()!==0 && d.getDay()!==6) added++; }
+        return d.toISOString().split('T')[0];
+    }
+
+    function transferData() {
+        const total = document.getElementById('grand-total-val').innerText;
+        document.getElementById('emailBody').innerHTML += `<p>Total Earnings: <b>${total}</b></p>`;
+        openTab({currentTarget: document.querySelectorAll('.tab-btn')[3]}, 'email');
+    }
+
+    // Storage and Render logic for Contacts and Templates
     function renderLibrary() {
         const container = document.getElementById('libraryItems');
-        const library = JSON.parse(localStorage.getItem('payrollLibraryFinal') || '[]');
-        container.innerHTML = library.length ? '' : '<p>No templates yet.</p>';
-        library.forEach((item, index) => {
+        const lib = JSON.parse(localStorage.getItem('pHubLib') || '[]');
+        container.innerHTML = lib.length ? '' : '<p>No templates.</p>';
+        lib.forEach((item, index) => {
             const div = document.createElement('div');
             div.className = 'lib-item';
-            div.innerHTML = `
-                <span class="lib-info">${item.title}</span> 
-                <div class="action-group">
-                    <button class="btn btn-accent" onclick="quickCopy(${index})">Copy</button>
-                    <button class="btn btn-copy" onclick="loadTemplate(${index})">Load</button>
-                    <button class="btn btn-danger" onclick="deleteTemplate(${index})">X</button>
-                </div>`;
+            div.innerHTML = `<span><b>${item.title}</b></span> 
+                <div><button class="btn btn-copy" onclick="quickCopy(${index})">Copy</button>
+                <button class="btn btn-danger" onclick="deleteTemplate(${index})">X</button></div>`;
             container.appendChild(div);
         });
     }
 
+    async function quickCopy(idx) {
+        const lib = JSON.parse(localStorage.getItem('pHubLib'));
+        const content = lib[idx].content;
+        const blob = new Blob([content], { type: "text/html" });
+        const data = [new ClipboardItem({ "text/html": blob, "text/plain": new Blob([content.replace(/<[^>]*>/g, '')], {type: "text/plain"}) })];
+        await navigator.clipboard.write(data);
+        alert("Copied!");
+    }
+
     function saveToLibrary() {
         const content = document.getElementById('emailBody').innerHTML;
-        if (!content.trim()) return alert("Composer is empty!");
-        const title = prompt("Template Name:");
+        const title = prompt("Name:");
         if (!title) return;
-        const library = JSON.parse(localStorage.getItem('payrollLibraryFinal') || '[]');
-        library.push({ title, content });
-        localStorage.setItem('payrollLibraryFinal', JSON.stringify(library));
+        const lib = JSON.parse(localStorage.getItem('pHubLib') || '[]');
+        lib.push({ title, content });
+        localStorage.setItem('pHubLib', JSON.stringify(lib));
         renderLibrary();
     }
 
-    function loadTemplate(index) {
-        const library = JSON.parse(localStorage.getItem('payrollLibraryFinal'));
-        document.getElementById('emailBody').innerHTML = library[index].content;
-        openTab({currentTarget: document.querySelectorAll('.tab-btn')[3]}, 'email');
+    function copySubject() { navigator.clipboard.writeText(document.getElementById('fullSubject').innerText); alert("Subject copied!"); }
+    async function copyEmail() {
+        const body = document.getElementById('emailBody');
+        const blob = new Blob([body.innerHTML], { type: "text/html" });
+        const data = [new ClipboardItem({ "text/html": blob, "text/plain": new Blob([body.innerText], {type: "text/plain"}) })];
+        await navigator.clipboard.write(data);
+        alert("Body copied!");
     }
 
-    function deleteTemplate(index) {
-        if(!confirm("Delete?")) return;
-        const library = JSON.parse(localStorage.getItem('payrollLibraryFinal'));
-        library.splice(index, 1);
-        localStorage.setItem('payrollLibraryFinal', JSON.stringify(library));
+    window.onload = () => { 
+        initGrid(); 
+        document.getElementById('fullSubject').innerText = `(Official Sensitive Required By ${getRequiredDate()} 17:00 Team:)`;
         renderLibrary();
-    }
-
-    window.onload = renderLibrary;
+    };
 </script>
 </body>
 </html>
