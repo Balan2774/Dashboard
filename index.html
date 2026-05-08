@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payroll Hub Pro</title>
+    <title>RTI Tool</title>
     <style>
         :root { --primary: #005ea5; --bg: #f3f2f1; --card: #ffffff; --accent: #00703c; --text: #0b0c0c; }
         body { font-family: "Segoe UI", Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); }
@@ -45,7 +45,7 @@
 
         .card { background: var(--card); padding: 20px; border: 1px solid #b1b4b6; border-radius: 4px; }
         .subject-box { background: #fffbe6; border: 1px solid #ffe58f; padding: 15px; margin-bottom: 20px; font-family: monospace; font-size: 0.85rem; color: #856404; position: relative; border-radius: 4px; }
-        #emailBody { min-height: 400px; border: 2px solid #0b0c0c; padding: 15px; background: #fff; overflow-y: auto; line-height: 1.5; border-radius: 4px; }
+        #emailBody { min-height: 400px; border: 2px solid #0b0c0c; padding: 15px; background: #fff; overflow-y: auto; line-height: 1.5; font-size: 1rem; border-radius: 4px; }
         
         .btn { background: var(--primary); color: white; border: none; padding: 10px 15px; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 0.8rem; }
         .btn:hover { background: #002d18; }
@@ -60,7 +60,7 @@
 
 <div id="loginOverlay">
     <div class="login-card">
-        <h1>Payroll Hub</h1>
+        <h1>RTI Tool</h1>
         <p>Please enter the access password</p>
         <input type="password" id="passInput" placeholder="Password" onkeydown="if(event.key==='Enter') checkPass()">
         <button class="btn" style="width:100%" onclick="checkPass()">Login</button>
@@ -79,7 +79,7 @@
     <div class="container">
         <section id="calc" class="tab-content active">
             <div class="paste-row">
-                <div><label>V1 Horizontal Paste</label><input type="text" oninput="hPaste(event, 1)"></div>
+                <div><label>V1 Horizontal Paste</label><input type="text" placeholder="Paste row data..." oninput="hPaste(event, 1)"></div>
                 <div><label>V2 Horizontal Paste</label><input type="text" oninput="hPaste(event, 2)"></div>
                 <div><label>V3 Horizontal Paste</label><input type="text" oninput="hPaste(event, 3)"></div>
             </div>
@@ -94,7 +94,7 @@
                 <div style="display:flex; gap:10px; margin-bottom:15px; align-items:flex-end;">
                     <div style="flex:1;"><label style="font-weight:bold; font-size:0.8rem;">Import CSV</label><input type="file" id="csvIn" accept=".csv" style="width:100%;"></div>
                     <button class="btn" onclick="importCSV()">Upload</button>
-                    <button class="btn btn-danger" onclick="clearContacts()">Clear</button>
+                    <button class="btn btn-danger" onclick="clearContacts()">Clear All</button>
                 </div>
                 <div id="contactDisplay"></div>
             </div>
@@ -117,15 +117,14 @@
                     <button class="btn btn-copy" onclick="copyEmail()">Copy Email Body</button>
                     <button class="btn" style="background:var(--accent)" onclick="saveToLibrary()">Save to Library</button>
                 </div>
-                <div id="emailBody" contenteditable="true"></div>
+                <div id="emailBody" contenteditable="true" placeholder="Paste Word content here..."></div>
             </div>
         </section>
     </div>
 </div>
 
 <script>
-    // Password Setup
-    const SET_PASS = "1234"; // CHANGE THIS TO YOUR DESIRED PASSWORD
+    const SET_PASS = "1234"; // CHANGE THIS BEFORE HOSTING
 
     function checkPass() {
         const input = document.getElementById('passInput').value;
@@ -198,54 +197,105 @@
     function initApp() {
         document.getElementById('fullSubject').innerText = `(Official Sensitive Required By ${getRequiredDate()} 17:00 Team:)`;
         renderLibrary();
+        renderContacts();
     }
 
     function transferData() {
         const total = document.getElementById('grand-total-val').innerText;
-        document.getElementById('emailBody').innerHTML += `<p>Total Earnings: <b>${total}</b></p>`;
+        document.getElementById('emailBody').innerHTML += `<p>Calculation Result: <b>${total}</b></p>`;
         openTab({currentTarget: document.querySelectorAll('.tab-btn')[3]}, 'email');
+    }
+
+    // Contacts Management
+    function importCSV() {
+        const file = document.getElementById('csvIn').files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const lines = e.target.result.split(/\r?\n/);
+            const contacts = JSON.parse(localStorage.getItem('rtiContacts')) || [];
+            lines.forEach(line => {
+                const p = line.split(',');
+                if(p.length >= 2) contacts.push({ name: p[0].trim(), email: p[1].trim() });
+            });
+            localStorage.setItem('rtiContacts', JSON.stringify(contacts));
+            renderContacts();
+        };
+        reader.readAsText(file);
+    }
+
+    function renderContacts() {
+        const container = document.getElementById('contactDisplay');
+        const contacts = JSON.parse(localStorage.getItem('rtiContacts')) || [];
+        container.innerHTML = contacts.length ? '' : '<p>No contacts.</p>';
+        contacts.forEach((c, i) => {
+            const div = document.createElement('div');
+            div.className = 'lib-item';
+            div.innerHTML = `<div><b>${c.name}</b><br><small>${c.email}</small></div>
+                <div><button class="btn btn-copy" onclick="copyVal('${c.email}')">Copy</button>
+                <button class="btn btn-danger" onclick="deleteContact(${i})">X</button></div>`;
+            container.appendChild(div);
+        });
+    }
+
+    function deleteContact(i) {
+        const c = JSON.parse(localStorage.getItem('rtiContacts'));
+        c.splice(i, 1);
+        localStorage.setItem('rtiContacts', JSON.stringify(c));
+        renderContacts();
+    }
+
+    function clearContacts() { if(confirm("Clear All?")) { localStorage.removeItem('rtiContacts'); renderContacts(); } }
+    function copyVal(v) { navigator.clipboard.writeText(v); alert("Copied!"); }
+
+    // Library Functions
+    function saveToLibrary() {
+        const content = document.getElementById('emailBody').innerHTML;
+        const title = prompt("Template Name:");
+        if (!title) return;
+        const lib = JSON.parse(localStorage.getItem('rtiLib')) || [];
+        lib.push({ title, content });
+        localStorage.setItem('rtiLib', JSON.stringify(lib));
+        renderLibrary();
     }
 
     function renderLibrary() {
         const container = document.getElementById('libraryItems');
-        const lib = JSON.parse(localStorage.getItem('pHubLib') || '[]');
+        const lib = JSON.parse(localStorage.getItem('rtiLib')) || [];
         container.innerHTML = lib.length ? '' : '<p>No templates.</p>';
         lib.forEach((item, index) => {
             const div = document.createElement('div');
             div.className = 'lib-item';
             div.innerHTML = `<span><b>${item.title}</b></span> 
-                <div><button class="btn btn-copy" onclick="quickCopy(${index})">Copy</button>
+                <div><button class="btn btn-accent" onclick="quickCopy(${index})">Copy</button>
                 <button class="btn btn-danger" onclick="deleteTemplate(${index})">X</button></div>`;
             container.appendChild(div);
         });
     }
 
     async function quickCopy(idx) {
-        const lib = JSON.parse(localStorage.getItem('pHubLib'));
+        const lib = JSON.parse(localStorage.getItem('rtiLib'));
         const content = lib[idx].content;
         const blob = new Blob([content], { type: "text/html" });
         const data = [new ClipboardItem({ "text/html": blob, "text/plain": new Blob([content.replace(/<[^>]*>/g, '')], {type: "text/plain"}) })];
         await navigator.clipboard.write(data);
-        alert("Copied!");
+        alert("Formatted Email Copied!");
     }
 
-    function saveToLibrary() {
-        const content = document.getElementById('emailBody').innerHTML;
-        const title = prompt("Name:");
-        if (!title) return;
-        const lib = JSON.parse(localStorage.getItem('pHubLib') || '[]');
-        lib.push({ title, content });
-        localStorage.setItem('pHubLib', JSON.stringify(lib));
+    function deleteTemplate(idx) {
+        const lib = JSON.parse(localStorage.getItem('rtiLib'));
+        lib.splice(idx, 1);
+        localStorage.setItem('rtiLib', JSON.stringify(lib));
         renderLibrary();
     }
 
-    function copySubject() { navigator.clipboard.writeText(document.getElementById('fullSubject').innerText); alert("Subject copied!"); }
+    function copySubject() { navigator.clipboard.writeText(document.getElementById('fullSubject').innerText); alert("Subject Copied!"); }
     async function copyEmail() {
         const body = document.getElementById('emailBody');
         const blob = new Blob([body.innerHTML], { type: "text/html" });
         const data = [new ClipboardItem({ "text/html": blob, "text/plain": new Blob([body.innerText], {type: "text/plain"}) })];
         await navigator.clipboard.write(data);
-        alert("Body copied!");
+        alert("Body Copied!");
     }
 </script>
 </body>
