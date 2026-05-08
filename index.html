@@ -1,113 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<style>
-  body { background: #000; color: #0f4; font-family: monospace; padding: 20px; text-align: center; }
-  .scr { position: fixed; inset: 0; background: #000; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .hid { display: none !important; }
-  input { background: #000; border: 1px solid #0f4; color: #0f4; font-size: 30px; width: 80%; padding: 15px; margin: 20px 0; text-align: center; }
-  button { background: #0f4; color: #000; border: none; padding: 20px; width: 80%; font-weight: bold; font-size: 18px; text-transform: uppercase; }
-  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
-  .node { aspect-ratio: 1; border: 1px solid #0f4; background: #000; color: #0f4; font-size: 20px; font-weight: bold; }
-  .red { background: #f03 !important; color: #fff !important; border-color: #fff !important; }
-  .panel { border: 1px solid #0f4; margin-top: 20px; padding: 15px; background: #010; min-height: 100px; text-align: left; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll Hub: Quick Copy Edition</title>
+    <style>
+        :root { --primary: #005ea5; --bg: #f3f2f1; --card: #ffffff; --accent: #00703c; --text: #0b0c0c; }
+        body { font-family: "Segoe UI", Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); }
+        .tabs { display: flex; background: #ffffff; border-bottom: 2px solid #b1b4b6; position: sticky; top: 0; z-index: 100; }
+        .tab-btn { padding: 15px 20px; border: none; background: none; cursor: pointer; font-size: 0.9rem; font-weight: bold; color: #505a5f; flex: 1; text-align: center; }
+        .tab-btn.active { color: var(--primary); border-bottom: 4px solid var(--primary); margin-bottom: -2px; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card { background: var(--card); padding: 20px; border: 1px solid #b1b4b6; border-radius: 4px; }
+        .btn { background: var(--primary); color: white; border: none; padding: 10px 15px; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 0.85rem; }
+        .btn:hover { background: #002d18; }
+        .btn-copy { background: #505a5f; }
+        .btn-danger { background: #d4351c; }
+        .btn-accent { background: var(--accent); }
+        .lib-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #ddd; background: #fff; }
+        .lib-info { font-weight: bold; font-size: 1rem; }
+        .action-group { display: flex; gap: 5px; }
+        /* Hidden element for rich text copying */
+        #hiddenClipboard { position: absolute; left: -9999px; }
+    </style>
 </head>
 <body>
 
-<div id="L" class="scr">
-  <h2>SYSTEM LOCK</h2>
-  <input type="number" id="P" placeholder="PASSCODE">
-  <button onclick="login()">BYPASS FIREWALL</button>
-</div>
+<nav class="tabs">
+    <button class="tab-btn active" onclick="openTab(event, 'calc')">Calculator</button>
+    <button class="tab-btn" onclick="openTab(event, 'contacts')">Contacts</button>
+    <button class="tab-btn" onclick="openTab(event, 'saved')">Saved Templates</button>
+    <button class="tab-btn" onclick="openTab(event, 'email')">Composer</button>
+</nav>
 
-<div id="Z" class="scr hid">
-  <h2 id="ZQ">QUESTION</h2>
-  <div id="ZC" style="display:flex; flex-direction:column; gap:10px; width:80%;"></div>
-</div>
+<div id="hiddenClipboard" contenteditable="true"></div>
 
-<div id="V" class="scr hid">
-  <h1 style="color:#ff0">MISSION COMPLETE</h1>
-  <p>S-CLASS OPERATIVE STATUS SECURED</p>
-  <button onclick="location.reload()">REBOOT</button>
-</div>
+<div class="container">
+    <section id="calc" class="tab-content active"><div class="card"><h2>Calculator</h2><p>Calculator logic active...</p></div></section>
+    <section id="contacts" class="tab-content"><div class="card"><h2>Contacts</h2><p>Contact logic active...</p></div></section>
 
-<div style="display:flex; justify-content:space-between; font-size:12px;">
-  <span>INTEL: <span id="count">0</span>/15</span>
-  <span style="color:#ff0">SESSION ACTIVE</span>
-</div>
+    <section id="saved" class="tab-content">
+        <div class="card">
+            <h2>Template Library</h2>
+            <p style="font-size:0.8rem; color:#666; margin-bottom:15px;">Use "Copy" to grab text instantly, or "Load" to edit in the Composer.</p>
+            <div id="libraryItems"></div>
+        </div>
+    </section>
 
-<div class="grid" id="G"></div>
-<div class="panel" id="CP">[ AWAITING NODE ]</div>
+    <section id="email" class="tab-content">
+        <div class="card">
+            <h2>Composer</h2>
+            <div id="emailBody" contenteditable="true" style="min-height:300px; border:1px solid #000; padding:10px;"></div>
+            <button class="btn btn-accent" style="margin-top:10px;" onclick="saveToLibrary()">Save Current to Library</button>
+        </div>
+    </section>
+</div>
 
 <script>
-  let collected = new Set();
-  let active = null;
-  const mission = [
-    {q:"7+8?", c:["13","15","18"], a:"15", t:"Count stones at Auld Kirk."},
-    {q:"SPY COLOR?", c:["Red","Blue","Black"], a:"Red", t:"Find 100yr old item at Auld Kirk."},
-    {q:"WINDOWS?", c:["8","10","12"], a:"10", t:"Verify windows at Town Hall."},
-    {q:"1-2-3", c:["CBA","ABC","CAB"], a:"ABC", t:"Find mark at Town Hall."},
-    {q:"LIME COLOR?", c:["Yellow","Green","Purple"], a:"Green", t:"Spy pose at Town Hall."},
-    {q:"SPIDER LEGS?", c:["6","8","10"], a:"8", t:"3 green items at Gardens."},
-    {q:"NORTH OPP?", c:["East","West","South"], a:"South", t:"Stealth walk at Gardens."},
-    {q:"HALF 30?", c:["15","20","25"], a:"15", t:"Next sector."},
-    {q:"2,4,6,?", c:["7","8","10"], a:"8", t:"3 red items at Square."},
-    {q:"1,2,3,?", c:["4","5","0"], a:"4", t:"Handshake at Square."},
-    {q:"DOG REV", c:["GOD","DGO","ODG"], a:"GOD", t:"Head to Peel Park."},
-    {q:"HIGH GROUND?", c:["Hill","Valley","River"], a:"Hill", t:"Highest point at Peel Park."},
-    {q:"1+1?", c:["1","2","11"], a:"2", t:"Trust walk at Peel Park."},
-    {q:"SQUARE SIDES?", c:["3","4","5"], a:"4", t:"Draw dirt map at Peel Park."},
-    {q:"BALL COUNT?", c:["10","15","20"], a:"15", t:"MISSION COMPLETE."}
-  ];
-
-  function login() {
-    if(document.getElementById('P').value === "1500") {
-      document.getElementById('L').classList.add('hid');
-      render();
-    } else { alert("DENIED"); }
-  }
-
-  function render() {
-    const g = document.getElementById('G'); g.innerHTML = '';
-    for(let i=1; i<=15; i++) {
-      const b = document.createElement('button');
-      b.className = 'node' + (collected.has(i) ? ' red' : '');
-      b.textContent = i;
-      b.onclick = () => {
-        if(collected.has(i)) { show(i); }
-        else { openPuzzle(i); }
-      };
-      g.appendChild(b);
+    function openTab(e, id) {
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+        if(e) e.currentTarget.classList.add("active");
     }
-    document.getElementById('count').textContent = collected.size;
-  }
 
-  function openPuzzle(n) {
-    active = n;
-    document.getElementById('ZQ').textContent = mission[n-1].q;
-    const c = document.getElementById('ZC'); c.innerHTML = '';
-    mission[n-1].c.forEach(choice => {
-      const b = document.createElement('button');
-      b.textContent = choice;
-      b.style.background = "#0f4";
-      b.onclick = () => {
-        if(choice === mission[n-1].a) {
-          collected.add(n);
-          document.getElementById('Z').classList.add('hid');
-          show(n); render();
-          if(collected.size === 15) document.getElementById('V').classList.remove('hid');
-        } else { alert("WRONG KEY"); }
-      };
-      c.appendChild(b);
-    });
-    document.getElementById('Z').classList.remove('hid');
-  }
+    // Direct Copy Function for Library
+    async function quickCopy(index) {
+        const library = JSON.parse(localStorage.getItem('payrollLibraryFinal') || '[]');
+        const content = library[index].content;
+        
+        const blob = new Blob([content], { type: "text/html" });
+        const data = [new ClipboardItem({ 
+            "text/html": blob, 
+            "text/plain": new Blob([content.replace(/<[^>]*>/g, '')], {type: "text/plain"}) 
+        })];
+        
+        await navigator.clipboard.write(data);
+        alert("Template '" + library[index].title + "' copied directly to clipboard!");
+    }
 
-  function show(n) {
-    document.getElementById('CP').innerHTML = `<strong>NODE ${n}:</strong><br>${mission[n-1].t}`;
-  }
+    function renderLibrary() {
+        const container = document.getElementById('libraryItems');
+        const library = JSON.parse(localStorage.getItem('payrollLibraryFinal') || '[]');
+        container.innerHTML = library.length ? '' : '<p>No templates yet.</p>';
+        library.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'lib-item';
+            div.innerHTML = `
+                <span class="lib-info">${item.title}</span> 
+                <div class="action-group">
+                    <button class="btn btn-accent" onclick="quickCopy(${index})">Copy</button>
+                    <button class="btn btn-copy" onclick="loadTemplate(${index})">Load</button>
+                    <button class="btn btn-danger" onclick="deleteTemplate(${index})">X</button>
+                </div>`;
+            container.appendChild(div);
+        });
+    }
+
+    function saveToLibrary() {
+        const content = document.getElementById('emailBody').innerHTML;
+        if (!content.trim()) return alert("Composer is empty!");
+        const title = prompt("Template Name:");
+        if (!title) return;
+        const library = JSON.parse(localStorage.getItem('payrollLibraryFinal') || '[]');
+        library.push({ title, content });
+        localStorage.setItem('payrollLibraryFinal', JSON.stringify(library));
+        renderLibrary();
+    }
+
+    function loadTemplate(index) {
+        const library = JSON.parse(localStorage.getItem('payrollLibraryFinal'));
+        document.getElementById('emailBody').innerHTML = library[index].content;
+        openTab({currentTarget: document.querySelectorAll('.tab-btn')[3]}, 'email');
+    }
+
+    function deleteTemplate(index) {
+        if(!confirm("Delete?")) return;
+        const library = JSON.parse(localStorage.getItem('payrollLibraryFinal'));
+        library.splice(index, 1);
+        localStorage.setItem('payrollLibraryFinal', JSON.stringify(library));
+        renderLibrary();
+    }
+
+    window.onload = renderLibrary;
 </script>
 </body>
 </html>
