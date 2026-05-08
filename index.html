@@ -8,6 +8,14 @@
         :root { --primary: #005ea5; --bg: #f3f2f1; --card: #ffffff; --accent: #00703c; --text: #0b0c0c; }
         body { font-family: "Segoe UI", Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); }
         
+        /* Login Overlay */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; max-width: 400px; width: 90%; }
+        .login-card h1 { color: var(--primary); margin-bottom: 20px; }
+        .login-card input { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #0b0c0c; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+        
+        /* App Content */
+        #appContent { display: none; }
         .tabs { display: flex; background: #ffffff; border-bottom: 2px solid #b1b4b6; position: sticky; top: 0; z-index: 100; }
         .tab-btn { padding: 15px 10px; border: none; background: none; cursor: pointer; font-size: 0.9rem; font-weight: bold; color: #505a5f; flex: 1; text-align: center; }
         .tab-btn.active { color: var(--primary); border-bottom: 4px solid var(--primary); margin-bottom: -2px; }
@@ -16,6 +24,7 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
+        /* Calculator Styles */
         .paste-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; background: #fff; padding: 15px; border: 1px solid #b1b4b6; }
         .paste-row label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; color: var(--primary); }
         .paste-row input { width: 100%; padding: 8px; border: 2px dashed var(--primary); box-sizing: border-box; }
@@ -49,60 +58,87 @@
 </head>
 <body>
 
-<nav class="tabs">
-    <button class="tab-btn active" onclick="openTab(event, 'calc')">Calculator</button>
-    <button class="tab-btn" onclick="openTab(event, 'contacts')">Contacts</button>
-    <button class="tab-btn" onclick="openTab(event, 'saved')">Saved Templates</button>
-    <button class="tab-btn" onclick="openTab(event, 'email')">Composer</button>
-</nav>
+<div id="loginOverlay">
+    <div class="login-card">
+        <h1>Payroll Hub</h1>
+        <p>Please enter the access password</p>
+        <input type="password" id="passInput" placeholder="Password" onkeydown="if(event.key==='Enter') checkPass()">
+        <button class="btn" style="width:100%" onclick="checkPass()">Login</button>
+        <p id="loginError" style="color:#d4351c; display:none; margin-top:10px;">Incorrect password.</p>
+    </div>
+</div>
 
-<div class="container">
-    <section id="calc" class="tab-content active">
-        <div class="paste-row">
-            <div><label>V1 Horizontal Paste</label><input type="text" oninput="hPaste(event, 1)"></div>
-            <div><label>V2 Horizontal Paste</label><input type="text" oninput="hPaste(event, 2)"></div>
-            <div><label>V3 Horizontal Paste</label><input type="text" oninput="hPaste(event, 3)"></div>
-        </div>
-        <div id="grid" class="excel-grid"></div>
-        <div class="grand-total"><span>Overall Earnings</span><span id="grand-total-val">£0.00</span></div>
-        <button class="btn btn-transfer" onclick="transferData()">Transfer Total to Email</button>
-    </section>
+<div id="appContent">
+    <nav class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'calc')">Calculator</button>
+        <button class="tab-btn" onclick="openTab(event, 'contacts')">Contacts</button>
+        <button class="tab-btn" onclick="openTab(event, 'saved')">Saved Templates</button>
+        <button class="tab-btn" onclick="openTab(event, 'email')">Composer</button>
+    </nav>
 
-    <section id="contacts" class="tab-content">
-        <div class="card">
-            <h2>Contacts</h2>
-            <div style="display:flex; gap:10px; margin-bottom:15px; align-items:flex-end;">
-                <div style="flex:1;"><label style="font-weight:bold; font-size:0.8rem;">Import CSV</label><input type="file" id="csvIn" accept=".csv" style="width:100%;"></div>
-                <button class="btn" onclick="importCSV()">Upload</button>
-                <button class="btn btn-danger" onclick="clearContacts()">Clear</button>
+    <div class="container">
+        <section id="calc" class="tab-content active">
+            <div class="paste-row">
+                <div><label>V1 Horizontal Paste</label><input type="text" oninput="hPaste(event, 1)"></div>
+                <div><label>V2 Horizontal Paste</label><input type="text" oninput="hPaste(event, 2)"></div>
+                <div><label>V3 Horizontal Paste</label><input type="text" oninput="hPaste(event, 3)"></div>
             </div>
-            <div id="contactDisplay"></div>
-        </div>
-    </section>
+            <div id="grid" class="excel-grid"></div>
+            <div class="grand-total"><span>Overall Earnings</span><span id="grand-total-val">£0.00</span></div>
+            <button class="btn btn-transfer" onclick="transferData()">Transfer Total to Email</button>
+        </section>
 
-    <section id="saved" class="tab-content">
-        <div class="card">
-            <h2>Template Library</h2>
-            <div id="libraryItems"></div>
-        </div>
-    </section>
+        <section id="contacts" class="tab-content">
+            <div class="card">
+                <h2>Contacts</h2>
+                <div style="display:flex; gap:10px; margin-bottom:15px; align-items:flex-end;">
+                    <div style="flex:1;"><label style="font-weight:bold; font-size:0.8rem;">Import CSV</label><input type="file" id="csvIn" accept=".csv" style="width:100%;"></div>
+                    <button class="btn" onclick="importCSV()">Upload</button>
+                    <button class="btn btn-danger" onclick="clearContacts()">Clear</button>
+                </div>
+                <div id="contactDisplay"></div>
+            </div>
+        </section>
 
-    <section id="email" class="tab-content">
-        <div class="card">
-            <div class="subject-box">
-                <span id="fullSubject"></span>
-                <button class="btn btn-copy" style="padding: 4px 8px; font-size: 0.7rem; position: absolute; right: 10px; top: 10px;" onclick="copySubject()">Copy</button>
+        <section id="saved" class="tab-content">
+            <div class="card">
+                <h2>Template Library</h2>
+                <div id="libraryItems"></div>
             </div>
-            <div class="toolbar">
-                <button class="btn btn-copy" onclick="copyEmail()">Copy Email Body</button>
-                <button class="btn" style="background:var(--accent)" onclick="saveToLibrary()">Save to Library</button>
+        </section>
+
+        <section id="email" class="tab-content">
+            <div class="card">
+                <div class="subject-box">
+                    <span id="fullSubject"></span>
+                    <button class="btn btn-copy" style="padding: 4px 8px; font-size: 0.7rem; position: absolute; right: 10px; top: 10px;" onclick="copySubject()">Copy</button>
+                </div>
+                <div class="toolbar">
+                    <button class="btn btn-copy" onclick="copyEmail()">Copy Email Body</button>
+                    <button class="btn" style="background:var(--accent)" onclick="saveToLibrary()">Save to Library</button>
+                </div>
+                <div id="emailBody" contenteditable="true"></div>
             </div>
-            <div id="emailBody" contenteditable="true"></div>
-        </div>
-    </section>
+        </section>
+    </div>
 </div>
 
 <script>
+    // Password Setup
+    const SET_PASS = "1234"; // CHANGE THIS TO YOUR DESIRED PASSWORD
+
+    function checkPass() {
+        const input = document.getElementById('passInput').value;
+        if (input === SET_PASS) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('appContent').style.display = 'block';
+            initGrid();
+            initApp();
+        } else {
+            document.getElementById('loginError').style.display = 'block';
+        }
+    }
+
     function openTab(e, id) {
         document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
@@ -159,13 +195,17 @@
         return d.toISOString().split('T')[0];
     }
 
+    function initApp() {
+        document.getElementById('fullSubject').innerText = `(Official Sensitive Required By ${getRequiredDate()} 17:00 Team:)`;
+        renderLibrary();
+    }
+
     function transferData() {
         const total = document.getElementById('grand-total-val').innerText;
         document.getElementById('emailBody').innerHTML += `<p>Total Earnings: <b>${total}</b></p>`;
         openTab({currentTarget: document.querySelectorAll('.tab-btn')[3]}, 'email');
     }
 
-    // Storage and Render logic for Contacts and Templates
     function renderLibrary() {
         const container = document.getElementById('libraryItems');
         const lib = JSON.parse(localStorage.getItem('pHubLib') || '[]');
@@ -207,12 +247,6 @@
         await navigator.clipboard.write(data);
         alert("Body copied!");
     }
-
-    window.onload = () => { 
-        initGrid(); 
-        document.getElementById('fullSubject').innerText = `(Official Sensitive Required By ${getRequiredDate()} 17:00 Team:)`;
-        renderLibrary();
-    };
 </script>
 </body>
 </html>
