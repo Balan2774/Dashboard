@@ -1,302 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RTI Tool</title>
-    <style>
-        :root { --primary: #005ea5; --bg: #f3f2f1; --card: #ffffff; --accent: #00703c; --text: #0b0c0c; }
-        body { font-family: "Segoe UI", Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); }
-        
-        /* Login Overlay */
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; }
-        .login-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; max-width: 400px; width: 90%; }
-        .login-card h1 { color: var(--primary); margin-bottom: 20px; }
-        .login-card input { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #0b0c0c; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
-        
-        /* App Content */
-        #appContent { display: none; }
-        .tabs { display: flex; background: #ffffff; border-bottom: 2px solid #b1b4b6; position: sticky; top: 0; z-index: 100; }
-        .tab-btn { padding: 15px 10px; border: none; background: none; cursor: pointer; font-size: 0.9rem; font-weight: bold; color: #505a5f; flex: 1; text-align: center; }
-        .tab-btn.active { color: var(--primary); border-bottom: 4px solid var(--primary); margin-bottom: -2px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DVLA Hazard Perception Test</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f3f4f6;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .container {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+  }
 
-        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+  h2 {
+    margin-top: 0;
+    color: #333;
+  }
 
-        /* Calculator Styles */
-        .paste-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; background: #fff; padding: 15px; border: 1px solid #b1b4b6; }
-        .paste-row label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; color: var(--primary); }
-        .paste-row input { width: 100%; padding: 8px; border: 2px dashed var(--primary); box-sizing: border-box; }
-        
-        .excel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .column { border-radius: 4px; border: 1px solid #b1b4b6; background: #fff; overflow: hidden; }
-        .col-header { padding: 10px; text-align: center; font-weight: bold; border-bottom: 1px solid rgba(0,0,0,0.1); }
-        .col-yellow { background-color: #fffde7; } .col-yellow .col-header { background: #fbc02d; }
-        .col-blue { background-color: #e3f2fd; } .col-blue .col-header { background: #2196f3; color: white; }
-        .col-green { background-color: #e8f5e9; } .col-green .col-header { background: #4caf50; color: white; }
-        
-        .row-item { display: flex; justify-content: space-between; padding: 5px 8px; border-bottom: 1px solid rgba(0,0,0,0.05); align-items: center; }
-        .row-item label { font-size: 0.75rem; font-weight: bold; }
-        .row-item input { width: 70px; border: 1px solid #999; text-align: right; padding: 3px; font-family: monospace; }
-        .total-row { background: rgba(0,0,0,0.08); font-weight: bold; font-size: 0.85rem; }
-        
-        .grand-total { background: #fce4ec; border: 2px solid #f06292; padding: 15px; margin-top: 15px; font-size: 1.2rem; font-weight: bold; display: flex; justify-content: space-between; border-radius: 4px; }
+  .instructions {
+    color: #555;
+    margin-bottom: 20px;
+  }
 
-        .card { background: var(--card); padding: 20px; border: 1px solid #b1b4b6; border-radius: 4px; }
-        .subject-box { background: #fffbe6; border: 1px solid #ffe58f; padding: 15px; margin-bottom: 20px; font-family: monospace; font-size: 0.85rem; color: #856404; position: relative; border-radius: 4px; }
-        #emailBody { min-height: 400px; border: 2px solid #0b0c0c; padding: 15px; background: #fff; overflow-y: auto; line-height: 1.5; font-size: 1rem; border-radius: 4px; }
-        
-        .btn { background: var(--primary); color: white; border: none; padding: 10px 15px; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 0.8rem; }
-        .btn:hover { background: #002d18; }
-        .btn-copy { background: #505a5f; }
-        .btn-transfer { background: var(--accent); width: 100%; margin-top: 10px; }
-        .btn-danger { background: #d4351c; }
-        .toolbar { margin-bottom: 10px; display: flex; gap: 8px; }
-        .lib-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #ddd; background: #fff; }
-    </style>
+  .video-container {
+    position: relative;
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  video {
+    width: 100%;
+    display: block;
+  }
+
+  /* Transparent overlay to catch clicks without pausing the video */
+  .click-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    cursor: crosshair;
+  }
+
+  .flags {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px;
+    margin-top: 15px;
+    background: #eef2f5;
+    border-radius: 4px;
+    padding: 5px;
+  }
+
+  .flag {
+    color: #e74c3c;
+    font-size: 24px;
+    margin: 0 4px;
+    animation: popIn 0.2s ease-out;
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+  }
+
+  .controls {
+    margin-top: 20px;
+  }
+
+  button {
+    background-color: #005ea5;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  button:hover {
+    background-color: #003a69;
+  }
+
+  #results {
+    margin-top: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    display: none;
+    padding: 15px;
+    border-radius: 4px;
+  }
+</style>
 </head>
 <body>
 
-<div id="loginOverlay">
-    <div class="login-card">
-        <h1>RTI Tool</h1>
-        <p>Please enter the access password</p>
-        <input type="password" id="passInput" placeholder="Password" onkeydown="if(event.key==='Enter') checkPass()">
-        <button class="btn" style="width:100%" onclick="checkPass()">Login</button>
-        <p id="loginError" style="color:#d4351c; display:none; margin-top:10px;">Incorrect password.</p>
-    </div>
-</div>
+<div class="container">
+  <h2>Hazard Perception Test</h2>
+  <p class="instructions">
+    Click the video as soon as you spot a developing hazard. <br>
+    <em>(For this demo, the developing hazard window occurs between 4 and 9 seconds).</em>
+  </p>
+  
+  <div class="video-container" id="videoContainer">
+    <!-- Using a placeholder video. Replace src with any local or remote dashcam MP4 -->
+    <video id="hazardVideo" muted playsinline>
+      <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+      Your browser does not support HTML video.
+    </video>
+    <div class="click-overlay" id="clickOverlay"></div>
+  </div>
+  
+  <div class="flags" id="flagsContainer">
+    <span style="color:#999; font-size: 14px;">Your clicks will appear here</span>
+  </div>
 
-<div id="appContent">
-    <nav class="tabs">
-        <button class="tab-btn active" onclick="openTab(event, 'calc')">Calculator</button>
-        <button class="tab-btn" onclick="openTab(event, 'contacts')">Contacts</button>
-        <button class="tab-btn" onclick="openTab(event, 'saved')">Saved Templates</button>
-        <button class="tab-btn" onclick="openTab(event, 'email')">Composer</button>
-    </nav>
+  <div class="controls">
+    <button id="startBtn">Start Test</button>
+  </div>
 
-    <div class="container">
-        <section id="calc" class="tab-content active">
-            <div class="paste-row">
-                <div><label>V1 Horizontal Paste</label><input type="text" placeholder="Paste row data..." oninput="hPaste(event, 1)"></div>
-                <div><label>V2 Horizontal Paste</label><input type="text" oninput="hPaste(event, 2)"></div>
-                <div><label>V3 Horizontal Paste</label><input type="text" oninput="hPaste(event, 3)"></div>
-            </div>
-            <div id="grid" class="excel-grid"></div>
-            <div class="grand-total"><span>Overall Earnings</span><span id="grand-total-val">£0.00</span></div>
-            <button class="btn btn-transfer" onclick="transferData()">Transfer Total to Email</button>
-        </section>
-
-        <section id="contacts" class="tab-content">
-            <div class="card">
-                <h2>Contacts</h2>
-                <div style="display:flex; gap:10px; margin-bottom:15px; align-items:flex-end;">
-                    <div style="flex:1;"><label style="font-weight:bold; font-size:0.8rem;">Import CSV</label><input type="file" id="csvIn" accept=".csv" style="width:100%;"></div>
-                    <button class="btn" onclick="importCSV()">Upload</button>
-                    <button class="btn btn-danger" onclick="clearContacts()">Clear All</button>
-                </div>
-                <div id="contactDisplay"></div>
-            </div>
-        </section>
-
-        <section id="saved" class="tab-content">
-            <div class="card">
-                <h2>Template Library</h2>
-                <div id="libraryItems"></div>
-            </div>
-        </section>
-
-        <section id="email" class="tab-content">
-            <div class="card">
-                <div class="subject-box">
-                    <span id="fullSubject"></span>
-                    <button class="btn btn-copy" style="padding: 4px 8px; font-size: 0.7rem; position: absolute; right: 10px; top: 10px;" onclick="copySubject()">Copy</button>
-                </div>
-                <div class="toolbar">
-                    <button class="btn btn-copy" onclick="copyEmail()">Copy Email Body</button>
-                    <button class="btn" style="background:var(--accent)" onclick="saveToLibrary()">Save to Library</button>
-                </div>
-                <div id="emailBody" contenteditable="true" placeholder="Paste Word content here..."></div>
-            </div>
-        </section>
-    </div>
+  <div id="results"></div>
 </div>
 
 <script>
-    const SET_PASS = "1234"; // CHANGE THIS BEFORE HOSTING
+  const video = document.getElementById('hazardVideo');
+  const clickOverlay = document.getElementById('clickOverlay');
+  const flagsContainer = document.getElementById('flagsContainer');
+  const startBtn = document.getElementById('startBtn');
+  const resultsDiv = document.getElementById('results');
 
-    function checkPass() {
-        const input = document.getElementById('passInput').value;
-        if (input === SET_PASS) {
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('appContent').style.display = 'block';
-            initGrid();
-            initApp();
-        } else {
-            document.getElementById('loginError').style.display = 'block';
-        }
-    }
+  // --- CONFIGURATION ---
+  // Define the scoring window in seconds (when the hazard develops)
+  const hazardStart = 4.0;
+  const hazardEnd = 9.0;
+  const windowDuration = hazardEnd - hazardStart;
+  
+  // The window is split into 5 equal segments for scoring (5 points down to 1 point)
+  const segmentTime = windowDuration / 5;
+  
+  // Maximum allowed clicks before scoring a zero for the clip (anti-cheating)
+  const maxClicks = 10; 
 
-    function openTab(e, id) {
-        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-        document.getElementById(id).classList.add("active");
-        if(e) e.currentTarget.classList.add("active");
-    }
+  // --- STATE ---
+  let clicks = 0;
+  let scored = false;
+  let score = 0;
 
-    const rows = ["Current YTD", "Tax YTD", "NI YTD", "RAS YTD", "Benefits", "Total 1", "Prev YTD", "Tax YTD", "NI YTD", "RAS YTD", "Benefits", "Total 2", "Pension", "Earnings"];
+  startBtn.addEventListener('click', () => {
+    // Reset test state
+    clicks = 0;
+    scored = false;
+    score = 0;
+    flagsContainer.innerHTML = '';
+    resultsDiv.style.display = 'none';
+    startBtn.style.display = 'none';
     
-    function initGrid() {
-        const grid = document.getElementById('grid');
-        grid.innerHTML = '';
-        [1,2,3].forEach(colNum => {
-            const div = document.createElement('div');
-            div.className = `column col-${['yellow','blue','green'][colNum-1]}`;
-            div.innerHTML = `<div class="col-header">Variable ${colNum}</div>`;
-            rows.forEach((r, i) => {
-                const isTotal = r.includes("Total") || r === "Earnings";
-                div.innerHTML += `<div class="row-item ${isTotal ? 'total-row' : ''}">
-                    <label>${r}</label>
-                    ${isTotal ? `<span id="v${colNum}-r${i}">£0.00</span>` : `<input type="number" step="0.01" class="v${colNum}-in" oninput="calc()">`}
-                </div>`;
-            });
-            grid.appendChild(div);
-        });
+    // Play video
+    video.currentTime = 0;
+    video.play();
+  });
+
+  clickOverlay.addEventListener('mousedown', () => {
+    if (video.paused || video.ended) return;
+    
+    clicks++;
+    
+    // Clear placeholder text on first click
+    if (clicks === 1) flagsContainer.innerHTML = '';
+
+    // Add red flag icon to UI
+    const flag = document.createElement('span');
+    flag.className = 'flag';
+    flag.innerHTML = '🚩';
+    flagsContainer.appendChild(flag);
+
+    // Score the click if within the window and not already scored
+    if (!scored && clicks <= maxClicks) {
+      const currentTime = video.currentTime;
+      
+      if (currentTime >= hazardStart && currentTime <= hazardEnd) {
+        // Calculate which of the 5 segments the user clicked in
+        const timeIntoHazard = currentTime - hazardStart;
+        const segment = Math.floor(timeIntoHazard / segmentTime);
+        
+        // Award points: Segment 0 = 5pts, Segment 4 = 1pt
+        score = 5 - segment;
+        
+        // Failsafe to ensure minimum of 1 point if clicked at the very end
+        if (score < 1) score = 1; 
+        scored = true;
+      }
     }
-
-    function hPaste(e, col) {
-        const parts = e.target.value.split(/[\t\s]{2,}/).map(p => p.trim()).filter(p => p !== "");
-        const inputs = document.querySelectorAll(`.v${col}-in`);
-        parts.forEach((v, i) => { if(inputs[i]) inputs[i].value = v.replace(/[£,]/g, ""); });
-        e.target.value = ""; 
-        calc();
+    
+    // DVLA rule: if you click in a pattern or too rapidly, you score zero for the clip
+    if (clicks > maxClicks) {
+      score = 0;
     }
+  });
 
-    function calc() {
-        let grand = 0;
-        [1,2,3].forEach(n => {
-            const v = Array.from(document.querySelectorAll(`.v${n}-in`)).map(i => parseFloat(i.value) || 0);
-            const t1 = v[0] - (v[1]+v[2]+v[3]+v[4]), t2 = v[5] - (v[6]+v[7]+v[8]+v[9]), final = t1 - t2 - v[10];
-            document.getElementById(`v${n}-r5`).innerText = fGBP(t1);
-            document.getElementById(`v${n}-r11`).innerText = fGBP(t2);
-            document.getElementById(`v${n}-r13`).innerText = fGBP(final);
-            grand += final;
-        });
-        document.getElementById('grand-total-val').innerText = fGBP(grand);
+  video.addEventListener('ended', () => {
+    clickOverlay.style.pointerEvents = 'none'; // Lock clicking
+    resultsDiv.style.display = 'block';
+    
+    if (clicks > maxClicks) {
+      resultsDiv.style.backgroundColor = '#fee2e2';
+      resultsDiv.style.color = '#b91c1c';
+      resultsDiv.innerHTML = `You clicked ${clicks} times. You scored 0 points for clicking continuously.`;
+    } else {
+      resultsDiv.style.backgroundColor = score > 0 ? '#dcfce7' : '#f3f4f6';
+      resultsDiv.style.color = score > 0 ? '#15803d' : '#374151';
+      resultsDiv.innerHTML = `Clip finished. You scored ${score} out of 5 points.`;
     }
-
-    function fGBP(n) { return new Intl.NumberFormat('en-GB', {style:'currency', currency:'GBP'}).format(n); }
-
-    function getRequiredDate() {
-        let d = new Date(), added = 0;
-        while(added < 2) { d.setDate(d.getDate()+1); if(d.getDay()!==0 && d.getDay()!==6) added++; }
-        return d.toISOString().split('T')[0];
-    }
-
-    function initApp() {
-        document.getElementById('fullSubject').innerText = `(Official Sensitive Required By ${getRequiredDate()} 17:00 Team:)`;
-        renderLibrary();
-        renderContacts();
-    }
-
-    function transferData() {
-        const total = document.getElementById('grand-total-val').innerText;
-        document.getElementById('emailBody').innerHTML += `<p>Calculation Result: <b>${total}</b></p>`;
-        openTab({currentTarget: document.querySelectorAll('.tab-btn')[3]}, 'email');
-    }
-
-    // Contacts Management
-    function importCSV() {
-        const file = document.getElementById('csvIn').files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const lines = e.target.result.split(/\r?\n/);
-            const contacts = JSON.parse(localStorage.getItem('rtiContacts')) || [];
-            lines.forEach(line => {
-                const p = line.split(',');
-                if(p.length >= 2) contacts.push({ name: p[0].trim(), email: p[1].trim() });
-            });
-            localStorage.setItem('rtiContacts', JSON.stringify(contacts));
-            renderContacts();
-        };
-        reader.readAsText(file);
-    }
-
-    function renderContacts() {
-        const container = document.getElementById('contactDisplay');
-        const contacts = JSON.parse(localStorage.getItem('rtiContacts')) || [];
-        container.innerHTML = contacts.length ? '' : '<p>No contacts.</p>';
-        contacts.forEach((c, i) => {
-            const div = document.createElement('div');
-            div.className = 'lib-item';
-            div.innerHTML = `<div><b>${c.name}</b><br><small>${c.email}</small></div>
-                <div><button class="btn btn-copy" onclick="copyVal('${c.email}')">Copy</button>
-                <button class="btn btn-danger" onclick="deleteContact(${i})">X</button></div>`;
-            container.appendChild(div);
-        });
-    }
-
-    function deleteContact(i) {
-        const c = JSON.parse(localStorage.getItem('rtiContacts'));
-        c.splice(i, 1);
-        localStorage.setItem('rtiContacts', JSON.stringify(c));
-        renderContacts();
-    }
-
-    function clearContacts() { if(confirm("Clear All?")) { localStorage.removeItem('rtiContacts'); renderContacts(); } }
-    function copyVal(v) { navigator.clipboard.writeText(v); alert("Copied!"); }
-
-    // Library Functions
-    function saveToLibrary() {
-        const content = document.getElementById('emailBody').innerHTML;
-        const title = prompt("Template Name:");
-        if (!title) return;
-        const lib = JSON.parse(localStorage.getItem('rtiLib')) || [];
-        lib.push({ title, content });
-        localStorage.setItem('rtiLib', JSON.stringify(lib));
-        renderLibrary();
-    }
-
-    function renderLibrary() {
-        const container = document.getElementById('libraryItems');
-        const lib = JSON.parse(localStorage.getItem('rtiLib')) || [];
-        container.innerHTML = lib.length ? '' : '<p>No templates.</p>';
-        lib.forEach((item, index) => {
-            const div = document.createElement('div');
-            div.className = 'lib-item';
-            div.innerHTML = `<span><b>${item.title}</b></span> 
-                <div><button class="btn btn-accent" onclick="quickCopy(${index})">Copy</button>
-                <button class="btn btn-danger" onclick="deleteTemplate(${index})">X</button></div>`;
-            container.appendChild(div);
-        });
-    }
-
-    async function quickCopy(idx) {
-        const lib = JSON.parse(localStorage.getItem('rtiLib'));
-        const content = lib[idx].content;
-        const blob = new Blob([content], { type: "text/html" });
-        const data = [new ClipboardItem({ "text/html": blob, "text/plain": new Blob([content.replace(/<[^>]*>/g, '')], {type: "text/plain"}) })];
-        await navigator.clipboard.write(data);
-        alert("Formatted Email Copied!");
-    }
-
-    function deleteTemplate(idx) {
-        const lib = JSON.parse(localStorage.getItem('rtiLib'));
-        lib.splice(idx, 1);
-        localStorage.setItem('rtiLib', JSON.stringify(lib));
-        renderLibrary();
-    }
-
-    function copySubject() { navigator.clipboard.writeText(document.getElementById('fullSubject').innerText); alert("Subject Copied!"); }
-    async function copyEmail() {
-        const body = document.getElementById('emailBody');
-        const blob = new Blob([body.innerHTML], { type: "text/html" });
-        const data = [new ClipboardItem({ "text/html": blob, "text/plain": new Blob([body.innerText], {type: "text/plain"}) })];
-        await navigator.clipboard.write(data);
-        alert("Body Copied!");
-    }
+    
+    startBtn.innerText = 'Retry Clip';
+    startBtn.style.display = 'inline-block';
+    clickOverlay.style.pointerEvents = 'auto'; // Re-enable for the next run
+  });
 </script>
 </body>
 </html>
