@@ -32,7 +32,7 @@ jobs:
 
       - name: Reconstruct and verify Plex Companion package
         run: |
-          cat .plex-build/zip.part.00a .plex-build/zip.part.00b .plex-build/zip.part.01 .plex-build/zip.part.02 .plex-build/zip.part.03 | base64 -d > PlexCompanion-Android-v1.zip
+          cat .plex-build/zip.part.00a .plex-build/zip.part.00b .plex-build/zip.part.01a .plex-build/zip.part.01b .plex-build/zip.part.02 .plex-build/zip.part.03 | base64 -d > PlexCompanion-Android-v1.zip
           echo "ce665cd84f7a8ec1f42f864f2543f4f9cfbc6b2f2f71f845cd02402ee15cc076  PlexCompanion-Android-v1.zip" | sha256sum -c -
           unzip -q PlexCompanion-Android-v1.zip
 
