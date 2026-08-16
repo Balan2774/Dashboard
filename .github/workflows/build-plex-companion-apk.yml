@@ -1,4 +1,4 @@
-name: Build Plex Companion 1.2 APK
+name: Build Plex Companion 1.3 APK
 
 on:
   workflow_dispatch:
@@ -30,7 +30,7 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Reconstruct and verify Plex Companion 1.2 package
+      - name: Reconstruct and verify Plex Companion 1.2 base
         run: |
           cat .plex-build/v12.part.00 .plex-build/v12.part.01 .plex-build/v12.part.02 .plex-build/v12.part.03 .plex-build/v12.part.04 .plex-build/v12.part.05 .plex-build/v12.part.060 .plex-build/v12.part.061 .plex-build/v12.part.07 .plex-build/v12.part.08 .plex-build/v12.part.090 .plex-build/v12.part.091 | base64 -d > PlexCompanion-Android-v1.2.zip
           echo "5ca6b31b884bd7e1c4c4e48bf0ab9dc06d51875f44169ed283c0f975bf7c5f79  PlexCompanion-Android-v1.2.zip" | sha256sum -c -
@@ -52,6 +52,12 @@ jobs:
           sed -i "s/applicationId 'com.alan.plexcompanion'/applicationId 'com.alan.plexcompanion.release'/" PlexCompanion/app/build.gradle
           sed -i 's/android:name=".MainActivity"/android:name="com.alan.plexcompanion.MainActivity"/' PlexCompanion/app/src/main/AndroidManifest.xml
 
+      - name: Apply Plex folder dropdown v1.3
+        run: |
+          cat .plex-build/v13.patch.part.00 .plex-build/v13.patch.part.01 .plex-build/v13.patch.part.02 .plex-build/v13.patch.part.03 > /tmp/v13.patch
+          patch -p0 < /tmp/v13.patch
+          grep -E "versionCode|versionName" PlexCompanion/app/build.gradle
+
       - name: Build unsigned release APK
         working-directory: PlexCompanion
         run: gradle :app:assembleRelease --stacktrace
@@ -59,7 +65,7 @@ jobs:
       - name: Upload unsigned release APK
         uses: actions/upload-artifact@v4
         with:
-          name: PlexCompanion-v1.2-unsigned-release-apk
+          name: PlexCompanion-v1.3-unsigned-release-apk
           path: PlexCompanion/app/build/outputs/apk/release/app-release-unsigned.apk
 
       - name: Stage Android signing tools
