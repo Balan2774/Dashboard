@@ -83,7 +83,7 @@ jobs:
               raise SystemExit(f'v1.5 patch checksum mismatch: {digest}')
           Path('/tmp/v15.patch').write_bytes(patch)
           PY
-          patch -p0 < /tmp/v15.patch
+          patch -p1 < /tmp/v15.patch
           grep -E "versionCode|versionName" PlexCompanion/app/build.gradle
 
       - name: Build unsigned release APK
