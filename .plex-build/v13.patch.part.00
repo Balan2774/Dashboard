@@ -1,0 +1,98 @@
+--- PlexCompanion/app/src/main/java/com/alan/plexcompanion/PlexClient.java
++++ PlexCompanion/app/src/main/java/com/alan/plexcompanion/PlexClient.java
+@@ -18,7 +18,11 @@
+ 
+ public class PlexClient {
+     public static class ServerInfo { public String name="Plex Server", version="", platform=""; }
+-    public static class Library { public String key="", title="", type=""; }
++    public static class Library {
++        public String key="", title="", type="";
++        public final List<String> locations = new ArrayList<>();
++        public String primaryPath() { return locations.isEmpty() ? "" : locations.get(0); }
++    }
+     public static class MediaItem {
+         public String type="", title="", grandparentTitle="", parentTitle="", thumb="", art="", file="", ratingKey="";
+         public int year=0, index=0, parentIndex=0;
+@@ -73,11 +77,21 @@
+     public List<Library> libraries() throws Exception {
+         byte[] xml = request("/library/sections", "GET");
+         List<Library> list = new ArrayList<>();
+-        XmlPullParser p = parser(xml); int e;
++        XmlPullParser p = parser(xml); int e; Library current = null;
+         while ((e=p.next()) != XmlPullParser.END_DOCUMENT) {
+-            if (e == XmlPullParser.START_TAG && "Directory".equals(p.getName())) {
+-                Library l = new Library(); l.key=attr(p,"key",""); l.title=attr(p,"title","Library"); l.type=attr(p,"type","");
+-                if (!l.key.isEmpty()) list.add(l);
++            if (e == XmlPullParser.START_TAG) {
++                if ("Directory".equals(p.getName())) {
++                    current = new Library();
++                    current.key=attr(p,"key","");
++                    current.title=attr(p,"title","Library");
++                    current.type=attr(p,"type","");
++                    if (!current.key.isEmpty()) list.add(current);
++                } else if ("Location".equals(p.getName()) && current != null) {
++                    String path = attr(p,"path","");
++                    if (!path.isEmpty()) current.locations.add(path);
++                }
++            } else if (e == XmlPullParser.END_TAG && "Directory".equals(p.getName())) {
++                current = null;
+             }
+         }
+         return list;
+--- PlexCompanion/app/src/main/java/com/alan/plexcompanion/SecretStore.java
++++ PlexCompanion/app/src/main/java/com/alan/plexcompanion/SecretStore.java
+@@ -50,6 +50,17 @@
+     public String getSmbPassword() { return decrypt(prefs.getString("smb_password_enc", "")); }
+     public boolean getSmbEnabled() { return prefs.getBoolean("smb_enabled", false); }
+     public boolean getAutoScan() { return prefs.getBoolean("smb_auto_scan", true); }
++    public String getPlexTargetLibraryKey() { return prefs.getString("plex_target_library_key", ""); }
++    public String getPlexTargetLibraryTitle() { return prefs.getString("plex_target_library_title", ""); }
++    public String getPlexTargetLibraryPath() { return prefs.getString("plex_target_library_path", ""); }
++
++    public void savePlexTargetLibrary(String key, String title, String path) {
++        prefs.edit()
++                .putString("plex_target_library_key", key == null ? "" : key.trim())
++                .putString("plex_target_library_title", title == null ? "" : title.trim())
++                .putString("plex_target_library_path", path == null ? "" : path.trim())
++                .apply();
++    }
+ 
+     public void saveSmb(String host, String share, String folder, String user, String password,
+                         String domain, boolean enabled, boolean autoScan) {
+--- PlexCompanion/app/src/main/java/com/alan/plexcompanion/MainActivity.java
++++ PlexCompanion/app/src/main/java/com/alan/plexcompanion/MainActivity.java
+@@ -18,6 +18,8 @@
+ import android.view.View;
+ import android.view.ViewGroup;
+ import android.view.WindowInsets;
++import android.widget.AdapterView;
++import android.widget.ArrayAdapter;
+ import android.widget.Button;
+ import android.widget.CheckBox;
+ import android.widget.EditText;
+@@ -27,6 +29,7 @@
+ import android.widget.LinearLayout;
+ import android.widget.ProgressBar;
+ import android.widget.ScrollView;
++import android.widget.Spinner;
+ import android.widget.TextView;
+ import android.widget.Toast;
+ 
+@@ -59,6 +62,16 @@
+     private volatile String activeIPlayerProcessId = "";
+     private volatile boolean iPlayerCancelRequested = false;
+ 
++    private static class PlexFolderChoice {
++        String libraryKey="", libraryTitle="", path="";
++        PlexFolderChoice(String key, String title, String path) {
++            libraryKey = key == null ? "" : key;
++            libraryTitle = title == null ? "" : title;
++            this.path = path == null ? "" : path;
++        }
++        String label() { return path.isEmpty() ? libraryTitle : libraryTitle + "  •  " + path; }
++    }
++
+     @Override protected void onCreate(Bundle savedInstanceState) {
+         super.onCreate(savedInstanceState);
+         store = new SecretStore(this);
+@@ -196,7 +209,9 @@
