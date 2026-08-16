@@ -61,3 +61,16 @@ jobs:
         with:
           name: PlexCompanion-v1.2-unsigned-release-apk
           path: PlexCompanion/app/build/outputs/apk/release/app-release-unsigned.apk
+
+      - name: Stage Android signing tools
+        run: |
+          mkdir -p signing-tools/lib
+          cp "$ANDROID_HOME/build-tools/36.0.0/apksigner" signing-tools/
+          cp "$ANDROID_HOME/build-tools/36.0.0/zipalign" signing-tools/
+          cp "$ANDROID_HOME/build-tools/36.0.0/lib/apksigner.jar" signing-tools/lib/
+
+      - name: Upload Android signing tools
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-36-signing-tools
+          path: signing-tools
