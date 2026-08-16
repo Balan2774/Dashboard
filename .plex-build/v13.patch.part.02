@@ -1,0 +1,43 @@
+.getSmbPassword()); smbPass.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD); EditText smbDomain=input("Domain (usually blank)",store.getSmbDomain());
+-        CheckBox smbEnabled=check("Copy completed iPlayer files to this network folder",store.getSmbEnabled()); CheckBox autoScan=check("Automatically scan Plex after a successful copy",store.getAutoScan());
++        CheckBox smbEnabled=check("Copy completed iPlayer files to this network folder",store.getSmbEnabled()); CheckBox autoScan=check("Automatically scan the selected Plex library after a successful copy",store.getAutoScan());
+         form.addView(smbHost); form.addView(smbShare); form.addView(smbFolder); form.addView(smbUser); form.addView(smbPass); form.addView(smbDomain); form.addView(smbEnabled); form.addView(autoScan);
+-        TextView help=text("Plex example: 192.168.0.26:32400\nSMB example: server 192.168.0.26, share TV Shows, optional folder BBC iPlayer.\nPlex token and SMB password are encrypted with Android Keystore on this phone.",12,MUTED,false); help.setPadding(0,dp(10),0,0); form.addView(help);
++
++        List<PlexFolderChoice> folderChoices=new ArrayList<>(); List<String> folderLabels=new ArrayList<>();
++        folderChoices.add(new PlexFolderChoice("","","")); folderLabels.add("Manual network folder");
++        ArrayAdapter<String> folderAdapter=new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,folderLabels){
++            @Override public View getView(int position, View convertView, ViewGroup parent){ TextView v=(TextView)super.getView(position,convertView,parent); v.setTextColor(TEXT); v.setTextSize(14); v.setPadding(dp(12),0,dp(12),0); return v; }
++            @Override public View getDropDownView(int position, View convertView, ViewGroup parent){ TextView v=(TextView)super.getDropDownView(position,convertView,parent); v.setTextColor(TEXT); v.setBackgroundColor(CARD_2); v.setTextSize(14); v.setPadding(dp(12),dp(12),dp(12),dp(12)); return v; }
++        };
++        folderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); plexFolderSpinner.setAdapter(folderAdapter);
++        final boolean[] loadingFolders={true};
++        plexFolderSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
++            @Override public void onNothingSelected(AdapterView<?> parent){}
++            @Override public void onItemSelected(AdapterView<?> parent,View view,int position,long id){
++                if(loadingFolders[0] || position<=0 || position>=folderChoices.size()) return;
++                PlexFolderChoice choice=folderChoices.get(position); plexFolderStatus.setText("Selected: "+choice.label()); applyPlexFolderToNetworkFields(choice,smbHost,smbShare,smbFolder,plexFolderStatus);
++            }
++        });
++        if(store.configured()){
++            runIo(() -> { try {
++                List<PlexClient.Library> libraries=plex.libraries();
++                ui(() -> {
++                    String savedKey=store.getPlexTargetLibraryKey(), savedPath=store.getPlexTargetLibraryPath(); int selected=0;
++                    for(PlexClient.Library l:libraries){
++                        if(l.locations.isEmpty()){
++                            folderChoices.add(new PlexFolderChoice(l.key,l.title,"")); folderLabels.add(l.title+"  •  no folder path returned");
++                            if(l.key.equals(savedKey) && savedPath.isEmpty()) selected=folderChoices.size()-1;
++                        } else for(String path:l.locations){
++                            folderChoices.add(new PlexFolderChoice(l.key,l.title,path)); folderLabels.add(l.title+"  •  "+path);
++                            if(l.key.equals(savedKey) && path.equals(savedPath)) selected=folderChoices.size()-1;
++                        }
++                    }
++                    folderAdapter.notifyDataSetChanged(); loadingFolders[0]=false; plexFolderSpinner.setSelection(selected);
++                    plexFolderStatus.setText(folderChoices.size()>1?"Choose a Plex library folder below.":"No Plex library folders were returned.");
++                });
++            } catch(Exception e){ ui(() -> {loadingFolders[0]=false; plexFolderStatus.setText("Could not load Plex folders: "+friendlyError(e)); plexFolderStatus.setTextColor(RED);}); } });
++        } else { loadingFolders[0]=false; plexFolderStatus.setText("Save the Plex server/token first, then reopen Settings to load folders."); }
++
++        TextView help=text("Pick a Plex folder from the dropdown. If Plex reports a network/UNC path, the SMB fields are filled automatically. If Plex reports a local Windows drive such as D:\\TV Shows, the app shows that path but Windows still needs to share it for your phone.\nPlex token and SMB password are encrypted with Android Keystore on this phone.",12,MUTED,false); help.setPadding(0,dp(10),0,0); form.addView(help);
+         new AlertDialog.Builder(this).setTitle("Plex Companion setup").setView(settingsScroll).setNe
