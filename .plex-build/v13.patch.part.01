@@ -1,0 +1,47 @@
+ @@
+ 
+         SmbTransfer.Config netCfg=store.smbConfig();
+         LinearLayout network=section("PLEX NETWORK DELIVERY","Optionally copy completed iPlayer files straight to a Windows/SMB folder used by Plex.");
+-        TextView networkState=text(netCfg.configured()?"Destination: "+netCfg.displayPath()+(netCfg.autoScan?"\nAuto Plex scan: ON":"\nAuto Plex scan: OFF"):"Not configured — downloads stay on this phone.",13,netCfg.configured()?GREEN:MUTED,false); network.addView(networkState);
++        String targetLibrary=store.getPlexTargetLibraryTitle();
++        String targetLibraryLine=targetLibrary.isEmpty()?"":"\nPlex library: "+targetLibrary;
++        TextView networkState=text(netCfg.configured()?"Destination: "+netCfg.displayPath()+targetLibraryLine+(netCfg.autoScan?"\nAuto Plex scan: ON":"\nAuto Plex scan: OFF"):"Not configured — downloads stay on this phone.",13,netCfg.configured()?GREEN:MUTED,false); network.addView(networkState);
+         LinearLayout netButtons=horizontal(); Button netSettings=button("Network Settings",false), netTest=button("Test Folder",true); netButtons.addView(netSettings,weight()); netButtons.addView(space(8)); netButtons.addView(netTest,weight()); network.addView(netButtons);
+         netSettings.setOnClickListener(v -> showSettings());
+         netTest.setEnabled(netCfg.configured());
+@@ -268,11 +283,24 @@
+                     String etaText=eta>0?"  •  ETA "+durationText((int)eta):""; state.setText("Downloading  "+p+"%"+etaText);
+                 }),processId,target);
+                 boolean transferred=target.configured() && result.networkError.isEmpty() && !result.networkUploadedNames.isEmpty();
+-                if(transferred && target.autoScan && store.configured()){ try{plex.scanAll();}catch(Exception ignored){} }
++                if(transferred && target.autoScan && store.configured()){
++                    try {
++                        String selectedLibraryKey=store.getPlexTargetLibraryKey();
++                        if(selectedLibraryKey.isEmpty()) plex.scanAll(); else plex.scanLibrary(selectedLibraryKey);
++                    } catch(Exception ignored){}
++                }
+                 ui(() -> {
+                     activeIPlayerProcessId=""; cancel.setEnabled(false); progress.setProgress(100); state.setTextColor(result.networkError.isEmpty()?GREEN:GOLD);
+                     StringBuilder done=new StringBuilder("Saved on phone: Downloads / Plex Companion / iPlayer\n").append(String.join("\n",result.publishedNames));
+-                    if(transferred) done.append("\n\nCopied to Plex folder:\n").append(target.displayPath()).append("\n").append(String.join("\n",result.networkUploadedNames)).append(target.autoScan?"\n\nPlex scan started automatically.":"");
++                    if(transferred) {
++                        done.append("\n\nCopied to Plex folder:\n").append(target.displayPath()).append("\n").append(String.join("\n",result.networkUploadedNames));
++                        if(target.autoScan) {
++                            String selectedTitle=store.getPlexTargetLibraryTitle();
++                            done.append("\n\nPlex scan started automatically");
++                            if(!selectedTitle.isEmpty()) done.append(" for ").append(selectedTitle);
++                            done.append(".");
++                        }
++                    }
+                     else if(target.configured() && !result.networkError.isEmpty()) done.append("\n\nNetwork copy failed (phone copy is safe):\n").append(result.networkError);
+                     state.setText(done.toString());
+                     if(store.configured() && !(transferred && target.autoScan)){
+@@ -379,19 +407,77 @@
+         EditText mac=input("Server MAC address",store.getMac()); EditText broadcast=input("Broadcast address",store.getBroadcast());
+         form.addView(label("PLEX SERVER")); form.addView(server); form.addView(label("PLEX TOKEN")); form.addView(token); form.addView(label("WAKE-ON-LAN MAC")); form.addView(mac); form.addView(label("BROADCAST ADDRESS")); form.addView(broadcast);
+         form.addView(label("iPLAYER → PLEX NETWORK FOLDER"));
++        TextView plexFolderStatus=text("Loading Plex folders…",12,MUTED,false); plexFolderStatus.setPadding(0,0,0,dp(5)); form.addView(plexFolderStatus);
++        Spinner plexFolderSpinner=new Spinner(this); plexFolderSpinner.setBackground(round(CARD_2,10));
++        LinearLayout.LayoutParams spinnerLp=new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,dp(50)); spinnerLp.setMargins(0,0,0,dp(7)); plexFolderSpinner.setLayoutParams(spinnerLp); form.addView(plexFolderSpinner);
++
+         EditText smbHost=input("Windows / SMB server",store.getSmbHost()); EditText smbShare=input("Share name, e.g. TV Shows",store.getSmbShare()); EditText smbFolder=input("Folder inside share (optional)",store.getSmbFolder()); EditText smbUser=input("Windows username",store.getSmbUser()); EditText smbPass=input("Windows password",store
