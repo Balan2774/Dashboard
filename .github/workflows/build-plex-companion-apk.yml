@@ -33,8 +33,14 @@ jobs:
       - name: Reconstruct and verify Plex Companion 1.1 package
         run: |
           cat .plex-build/v11.part.00 .plex-build/v11.part.01 .plex-build/v11.part.02 .plex-build/v11.part.03 .plex-build/v11.part.04 .plex-build/v11.part.05 .plex-build/v11.part.06 .plex-build/v11.part.07 .plex-build/v11.part.08 | base64 -d > PlexCompanion-Android-v1.1.zip
-          echo "bc066c369333b3d8928239c9987154461738a115674692acdca258712256be28  PlexCompanion-Android-v1.1.zip" | sha256sum -c -
+          echo "2d2afc8db6ccdb05f2db77250ad17584118897267fe1dc47839755736298319a  PlexCompanion-Android-v1.1.zip" | sha256sum -c -
           unzip -q PlexCompanion-Android-v1.1.zip
+
+      - name: Make side-by-side test package
+        run: |
+          sed -i "s/applicationId 'com.alan.plexcompanion'/applicationId 'com.alan.plexcompanion.iplayer'/" PlexCompanion/app/build.gradle
+          sed -i 's/android:name=".MainActivity"/android:name="com.alan.plexcompanion.MainActivity"/' PlexCompanion/app/src/main/AndroidManifest.xml
+          sed -i 's/android:label="Plex Companion"/android:label="Plex Companion 1.1 Test"/' PlexCompanion/app/src/main/AndroidManifest.xml
 
       - name: Build debug APK
         working-directory: PlexCompanion
@@ -43,5 +49,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: PlexCompanion-v1.1-debug-apk
+          name: PlexCompanion-v1.1-side-by-side-apk
           path: PlexCompanion/app/build/outputs/apk/debug/app-debug.apk
